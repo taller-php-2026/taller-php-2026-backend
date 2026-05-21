@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class profesionales extends Model
+class Administrador extends Model
 {
     public function usuario()
     {
-        return $this->hasOne(usuarios::class, 'idUsuario');
+        return $this->belongsTo(Usuario::class, 'idUsuario');
     }
 }

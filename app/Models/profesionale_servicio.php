@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class paquetes_servicios extends Model
+class ProfesionalServicio extends Model
 {
-    //
+    
 }

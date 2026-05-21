@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class reglas_disponibilidad extends Model
+class ReglaDisponibilidad extends Model
 {
     //
 }
