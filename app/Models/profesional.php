@@ -10,4 +10,11 @@ class Profesional extends Model
     {
         return $this->belongsTo(Usuario::class, 'idUsuario');
     }
+    
+    public function servicios()
+    {
+        return $this->hasMany(Servicio::class, 'idProfesional');
+    }
+
+
 }
