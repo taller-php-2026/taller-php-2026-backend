@@ -4,7 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class paquetes_servicios extends Model
+class PaqueteServicio extends Model
 {
-    //
+    public function servicio()
+    {
+        return $this->blongsTo(Servicio::class, 'idServicio');
+    }
 }

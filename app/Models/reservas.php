@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class reservas extends Model
+class Reserva extends Model
 {
     public function pago()
     {
-        return $this->hasOne(pagos::class, 'idPago');
+        return $this->hasOne(Pago::class, 'idPago');
     }
 }

@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class clientes extends Model
+class Cliente extends Model
 {
-    public function usuario()
+    public function Usuario()
     {
-        return $this->hasOne(usuarios::class, 'idUsuario');
+        return $this->belongsTo(Usuario::class, 'idUsuario');
     }
 
-    public function resenas()
+    public function resena()
     {
-        return $this->hasMany(resenas::class, 'idCliente');
+        return $this->hasMany(Resena::class, 'idCliente');
     }
 }

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class excepciones_disponibilidad extends Model
+class ExcepcionDisponibilidad extends Model
 {
     //
 }

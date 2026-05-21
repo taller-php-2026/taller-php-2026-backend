@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class notificaciones extends Model
+class Notificacion extends Model
 {
-    public function usuarios()
+    public function usuario()
     {
-        return $this->hasOne(usuarios::class, 'idUsuario');
+        return $this->belongsTo(Usuario::class, 'idUsuario');
     }
 }

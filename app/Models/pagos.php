@@ -4,7 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class pagos extends Model
+class Pago extends Model
 {
-    //
+    public function reserva()
+    {
+        return $this->belongsTo(Reserva::class, 'idReserva');
+    }
 }
