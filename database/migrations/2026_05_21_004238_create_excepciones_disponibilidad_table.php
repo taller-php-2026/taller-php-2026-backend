@@ -17,7 +17,8 @@ return new class extends Migration
             $table->time('horaInicio');
             $table->time('horaFin');
             $table->string('motivo')->nullable();
-            $table->foreignId('idAgenda')->constrained('agendas')->onDelete('cascade');
+            $table->unsignedBigInteger('idAgenda');
+            $table->foreign('idAgenda')->references('idAgenda')->on('agendas')->onDelete('cascade');
             $table->timestamps();
         });
     }

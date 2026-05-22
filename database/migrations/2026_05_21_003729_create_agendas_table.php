@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('agendas', function (Blueprint $table) {
             $table->id('idAgenda');
-            $table->foreignId('idCiclo')->constrained('ciclos')->onDelete('cascade');
+            $table->unsignedBigInteger('idCiclo');
+            $table->foreign('idCiclo')->references('idCiclo')->on('ciclos')->onDelete('cascade');
             $table->timestamps();
         });
     }

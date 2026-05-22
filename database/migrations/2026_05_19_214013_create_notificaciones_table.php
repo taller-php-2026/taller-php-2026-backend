@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notificaciones', function (Blueprint $table) {
+                  
             $table->id('idNotificacion');
             $table->string('titulo');
             $table->text('mensaje');
@@ -20,7 +21,8 @@ return new class extends Migration
             $table->boolean('enviadaMail')->default(false);
             $table->dateTime('fechaCreacion');
             $table->dateTime('fechaLectura')->nullable();
-            $table->foreignId('idUsuario')->constrained('usuarios')->onDelete('cascade');
+            $table->unsignedBigInteger('idUsuario')->unique();
+            $table->foreign('idUsuario')->references('idUsuario')->on('usuarios')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('servicios_comunes', function (Blueprint $table) {
-            $table->foreignId('servicio_id')->primary()->constrained('servicios')->onDelete('cascade');
+            $table->id('idServicioComun');
+            $table->unsignedBigInteger('idServicio')->unique();
+            $table->foreign('idServicio')->references('idServicio')->on('servicios')->onDelete('cascade');
             $table->timestamps();
         });
     }

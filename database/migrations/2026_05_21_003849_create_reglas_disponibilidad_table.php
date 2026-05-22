@@ -18,9 +18,11 @@ return new class extends Migration
             $table->time('horaFin');
             $table->integer('pausaMinutos');
             $table->integer('bufferMinutos');
-            $table->boolean('activa')->default(true);
-            $table->foreignId('idAgenda')->constrained('agendas')->onDelete('cascade');
-            $table->foreignId('idProfesional')->constrained('profesionales')->onDelete('cascade');
+            $table->boolean('activa')->default(true);  
+            $table->unsignedBigInteger('idAgenda');
+            $table->foreign('idAgenda')->references('idAgenda')->on('agendas')->onDelete('cascade');
+            $table->unsignedBigInteger('idProfesional');
+            $table->foreign('idProfesional')->references('idUsuario')->on('profesionales')->onDelete('cascade');
             $table->timestamps();
         });
     }
