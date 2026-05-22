@@ -9,6 +9,7 @@ class Resena extends Model
     protected $table = 'resenas';
 
     protected $fillable = [
+        'idReserva',
         'idCliente',
         'idProfesional',
         'puntuacion',

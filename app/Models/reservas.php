@@ -9,9 +9,11 @@ class Reserva extends Model
     protected $table = 'reservas';
 
     protected $fillable = [
+        'idReserva',
         'idCliente',
         'idServicio',
         'idHorario',
+        'fechaReserva',
         'estado',
         'comentarios'
     ];

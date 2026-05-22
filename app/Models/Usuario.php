@@ -9,6 +9,7 @@ class Usuario extends Model
     protected $table = 'usuarios';
 
     protected $fillable = [
+        'idUsuario',
         'nombre',
         'email',
         'fechaRegistro',
@@ -17,7 +18,7 @@ class Usuario extends Model
         'rol',
         'activo'
     ];
-    
+
     public function cliente()
     {
         return $this->hasOne(Cliente::class, 'idUsuario');

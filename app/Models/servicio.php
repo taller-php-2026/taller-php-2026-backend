@@ -9,9 +9,16 @@ class Servicio extends Model
     protected $table = 'servicios_comunes';
 
     protected $fillable = [
-        'idServicio'
+        'idServicio',
+        'idProfesional',
+        'nombre',
+        'descripcion',
+        'precio',
+        'duracionMinutos',
+        'activo',
+        'modalidad'
     ];
-    
+
     public function profesional()
     {
         return $this->belongsTo(Profesional::class, 'idProfesional');

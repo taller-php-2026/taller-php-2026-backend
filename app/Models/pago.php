@@ -9,6 +9,7 @@ class Pago extends Model
     protected $table = 'pagos';
 
     protected $fillable = [
+        'idPago',
         'idReserva',
         'monto',
         'metodo',

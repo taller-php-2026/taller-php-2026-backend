@@ -13,11 +13,11 @@ class ReglaDisponibilidad extends Model
         'diaSemana',
         'horaInicio',
         'horaFin',
-        'pausaMultSlot',
+        'pausaMinutos',
         'duracionMinutos',
         'activo'
     ];
-    
+
     public function agenda()
     {
         return $this->belongsTo(Agenda::class, 'idAgenda');
