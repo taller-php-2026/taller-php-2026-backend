@@ -6,6 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Profesional extends Model
 {
+    protected $table = 'profesionales';
+
+    protected $fillable = [
+        'idUsuario',
+        'nombreNegocio',
+        'descripcion',
+        'ratingPromedio'
+    ];
+    
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'idUsuario');
@@ -16,5 +25,14 @@ class Profesional extends Model
         return $this->hasMany(Servicio::class, 'idProfesional');
     }
 
+    public function agendas()
+    {
+        return $this->hasMany(Agenda::class, 'idProfesional');
+    }
+
+    public function resenas()
+    {
+        return $this->hasMany(Resena::class, 'idProfesional');
+    }
 
 }

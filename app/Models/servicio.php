@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Servicio extends Model
 {
+    protected $table = 'servicios_comunes';
+
+    protected $fillable = [
+        'idServicio'
+    ];
+    
     public function profesional()
     {
         return $this->belongsTo(Profesional::class, 'idProfesional');
@@ -26,5 +32,10 @@ class Servicio extends Model
     {
         return $this->hasOne(PaqueteServicio::class, 'idServicio');
     }
+    public function videoSesion()
+    {
+        return $this->hasOne(VideoSesion::class, 'idServicio');
+    }
+
 }
  

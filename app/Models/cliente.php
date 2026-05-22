@@ -6,13 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cliente extends Model
 {
-    public function Usuario()
+    protected $table = 'clientes';
+
+    protected $fillable = [
+        'idUsuario'
+    ];
+    
+    public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'idUsuario');
+        return $this->belongsTo(usuario::class, 'idUsuario');
     }
 
     public function resena()
     {
-        return $this->hasMany(Resena::class, 'idCliente');
+        return $this->hasMany(resena::class, 'idCliente');
+    }
+
+    public function reserva()
+    {
+        return $this->hasMany(reserva::class, 'idCliente');
     }
 }

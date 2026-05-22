@@ -6,8 +6,33 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reserva extends Model
 {
+    protected $table = 'reservas';
+
+    protected $fillable = [
+        'idCliente',
+        'idServicio',
+        'idHorario',
+        'estado',
+        'comentarios'
+    ];
+
     public function pago()
     {
-        return $this->hasOne(Pago::class, 'idPago');
+        return $this->hasOne(Pago::class, 'idReserva');
+    }
+
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class, 'idCliente');
+    }
+
+    public function servicio()
+    {
+        return $this->belongsTo(Servicio::class, 'idServicio');
+    }
+
+    public function horario()
+    {
+        return $this->belongsTo(Horario::class, 'idHorario');
     }
 }

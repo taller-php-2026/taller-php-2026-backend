@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Administrador extends Model
 {
+    protected $table = 'administradores';
+
+    protected $fillable = [
+        'idUsuario',
+        'nivelAcceso'
+    ];
+    
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'idUsuario');

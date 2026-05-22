@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pago extends Model
 {
+    protected $table = 'pagos';
+
+    protected $fillable = [
+        'idReserva',
+        'monto',
+        'metodo',
+        'estado',
+        'referenciaExterna',
+        'fechaPago'
+    ];
+
     public function reserva()
     {
         return $this->belongsTo(Reserva::class, 'idReserva');
