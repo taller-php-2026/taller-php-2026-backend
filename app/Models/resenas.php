@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Resena extends Model
 {
     protected $table = 'resenas';
-
+    protected $primaryKey = 'idResena';
     protected $fillable = [
+        'idResena',
         'idReserva',
         'idCliente',
         'idProfesional',

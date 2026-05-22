@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class VideoSesion extends Model{
   protected $table = 'video_sesiones';
+  protected $primaryKey = 'idVideoSesion';
 
   protected $fillable = [
+    'idVideoSesion',
     'idServicio',
     'proveedor',
     'urlAcceso',
