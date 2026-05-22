@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Servicio extends Model
 {
     protected $table = 'servicios_comunes';
-
+    protected $primaryKey = 'idServicio';
     protected $fillable = [
         'idServicio',
         'idProfesional',

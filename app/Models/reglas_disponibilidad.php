@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ReglaDisponibilidad extends Model
 {
     protected $table = 'reglas_disponibilidad';
-
+    protected $primaryKey = 'idAgenda';
     protected $fillable = [
         'idAgenda',
         'diaSemana',

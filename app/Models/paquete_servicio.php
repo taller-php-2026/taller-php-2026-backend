@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PaqueteServicio extends Model
 {
     protected $table = 'paquetes_servicio';
-
+    protected $primaryKey = 'idServicio';
     protected $fillable = [
         'idServicio',
         'totalSesiones',

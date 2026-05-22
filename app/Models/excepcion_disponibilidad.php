@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ExcepcionDisponibilidad extends Model
 {
     protected $table = 'excepciones_disponibilidad';
-
+    protected $primaryKey = 'idAgenda';
     protected $fillable = [
         'idAgenda',
         'fecha',
