@@ -12,12 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('profesionales_servicios', function (Blueprint $table) {
-            $table->foreignId('idProfesional')->constrained('profesionales')->onDelete('cascade');
-            $table->foreignId('idServicio')->constrained('servicios')->onDelete('cascade');
+            $table->id("idProfesionalServicio");
+            $table->unsignedBigInteger('idProfesional')->unique(); 
+            $table->foreign('idProfesional')->references('idUsuario')->on('profesionales')->onDelete('cascade');
+            $table->unsignedBigInteger('idServicio')->unique(); 
+            $table->foreign('idServicio')->references('idServicio')->on('servicios')->onDelete('cascade');
             $table->timestamps();
         });
-    }
-
+    } 
     /**
      * Reverse the migrations.
      */

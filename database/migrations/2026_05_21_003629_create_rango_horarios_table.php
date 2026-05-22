@@ -16,7 +16,8 @@ return new class extends Migration
             $table->enum('diaSemana', ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']);
             $table->time('horaInicio');
             $table->time('horaFin');
-            $table->foreignId('idCiclo')->constrained('ciclos')->onDelete('cascade');
+            $table->unsignedBigInteger('idCiclo');
+            $table->foreign('idCiclo')->references('idCiclo')->on('ciclos')->onDelete('cascade');
             $table->timestamps();
         });
     }

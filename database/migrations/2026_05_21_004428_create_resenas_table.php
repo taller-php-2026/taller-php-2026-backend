@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id('idResena');
             $table->integer('calificacion');
             $table->text('comentario')->nullable();
-            $table->date('fecha');
-            $table->foreignId('idProfesional')->constrained('profesionales')->onDelete('cascade');
-            $table->foreignId('idCliente')->constrained('clientes')->onDelete('cascade');
+            $table->date('fecha'); 
+            $table->unsignedBigInteger('idProfesional');
+            $table->foreign('idProfesional')->references('idUsuario')->on('profesionales')->onDelete('cascade');
+            $table->unsignedBigInteger('idCliente');
+            $table->foreign('idCliente')->references('idUsuario')->on('clientes')->onDelete('cascade');
             $table->timestamps();
         });
     }

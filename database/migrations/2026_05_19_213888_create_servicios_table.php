@@ -19,8 +19,10 @@ return new class extends Migration
             $table->integer('duracionMinutos');
             $table->boolean('activo')->default(true);
             $table->enum('modalidad', ['presencial', 'virtual', 'hibrida'])->default('presencial');
-            $table->foreignId('idUbicacion')->nullable()->constrained('ubicaciones')->onDelete('cascade');
-            $table->foreignId('idVideoSesion')->nullable()->constrained('video_sesiones')->onDelete('set null');
+            $table->unsignedBigInteger('idUbicacion')->nullable();
+            $table->foreign('idUbicacion')->references('idUbicacion')->on('ubicaciones')->onDelete('cascade');
+            $table->unsignedBigInteger('idVideoSesion')->nullable();
+            $table->foreign('idVideoSesion')->references('idVideoSesion')->on('video_sesiones')->nullOnDelete();
             $table->timestamps();
         });
     }
