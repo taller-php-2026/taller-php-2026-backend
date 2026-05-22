@@ -6,6 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Usuario extends Model
 {
+    protected $table = 'usuarios';
+
+    protected $fillable = [
+        'idUsuario',
+        'nombre',
+        'email',
+        'fechaRegistro',
+        'contrasena',
+        'telefono',
+        'rol',
+        'activo'
+    ];
+
     public function cliente()
     {
         return $this->hasOne(Cliente::class, 'idUsuario');

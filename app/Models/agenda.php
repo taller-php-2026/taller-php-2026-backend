@@ -6,7 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Agenda extends Model
 {
-  
+    protected $table = 'agendas';
+
+    protected $fillable = [
+        'idProfesional',
+        'idCiclo'
+    ];
+
     public function profesional()
     {
         return $this->belongsTo(Profesional::class, 'idProfesional');
