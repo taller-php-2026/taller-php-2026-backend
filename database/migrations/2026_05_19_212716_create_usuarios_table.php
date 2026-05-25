@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('telefono');
             $table->boolean('activo')->default(true);
-            $table->date('fechaRegistro')->default(now());
+            $table->timestamp('fechaRegistro')->useCurrent();
             $table->timestamps();
         });
     }
