@@ -20,7 +20,12 @@ class Reserva extends Model
 
     public function pago()
     {
-        return $this->hasOne(Pago::class, 'idReserva');
+    return $this->belongsTo(Pago::class, 'idPago', 'idPago');
+    }
+
+    public function profesional()
+    {
+         return $this->belongsTo(Profesional::class, 'idProfesional', 'idUsuario');
     }
 
     public function cliente()
@@ -35,6 +40,6 @@ class Reserva extends Model
 
     public function horario()
     {
-        return $this->belongsTo(Horario::class, 'idHorario');
+        return $this->belongsTo(Horario::class, 'idHorario', 'idHorario');
     }
 }
