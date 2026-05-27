@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Reserva;
 
 class Pago extends Model
 {
@@ -18,6 +19,6 @@ class Pago extends Model
 
     public function reserva()
     {
-        return $this->belongsTo(Reserva::class, 'idReserva');
+        return $this->hasOne(Reserva::class, 'idPago', 'idPago');
     }
 }
