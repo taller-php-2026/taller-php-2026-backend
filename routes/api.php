@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\RangoHorarioController;
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);
 Route::apiResource('reservas', ReservaController::class);
+Route::post('reservas/{id}/pagar', [ReservaController::class, 'pagar']);
 Route::apiResource('servicios', ServicioController::class);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);

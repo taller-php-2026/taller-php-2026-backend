@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Pago;
 use App\Models\Reserva;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,45 @@ class ReservaService
     {
         DB::transaction(function () use ($reserva) {
             $reserva->delete();
+        });
+    }
+
+    public function pagar(int $id, array $data): Reserva
+    {
+        $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
+
+        if ($reserva->estado === 'cancelada') {
+            throw new HttpException(422, 'No se puede pagar una reserva cancelada.');
+        }
+
+        $pago = $reserva->pago;
+
+        if ($pago && $pago->estado === 'aprobado') {
+            throw new HttpException(409, 'La reserva ya tiene un pago aprobado.');
+        }
+
+        return DB::transaction(function () use ($reserva, $pago, $data) {
+            $datosPago = [
+                'metodoPago'        => $data['metodoPago'],
+                'estado'            => 'aprobado',
+                'fechaPago'         => now(),
+                'referenciaExterna' => $data['referenciaExterna'] ?? null,
+            ];
+
+            if ($pago) {
+                $pago->update($datosPago);
+            } else {
+                $pago = Pago::create(array_merge($datosPago, [
+                    'monto' => $reserva->servicio->precio,
+                ]));
+
+                $reserva->idPago = $pago->idPago;
+            }
+
+            $reserva->estado = 'confirmada';
+            $reserva->save();
+
+            return $reserva->fresh(self::WITH_RELATIONS);
         });
     }
 }
