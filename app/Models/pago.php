@@ -9,10 +9,8 @@ class Pago extends Model
     protected $table = 'pagos';
     protected $primaryKey = 'idPago';
     protected $fillable = [
-        'idPago',
-        'idReserva',
         'monto',
-        'metodo',
+        'metodoPago',
         'estado',
         'referenciaExterna',
         'fechaPago'

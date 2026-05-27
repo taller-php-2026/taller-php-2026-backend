@@ -7,14 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class ExcepcionDisponibilidad extends Model
 {
     protected $table = 'excepciones_disponibilidad';
-    protected $primaryKey = 'idAgenda';
+    protected $primaryKey = 'idExcepcion';
     protected $fillable = [
         'idAgenda',
         'fecha',
         'horaInicio',
         'horaFin',
-        'motivo',
-        'disponible'
+        'motivo'
     ];
     
     public function agenda()

@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: df47f0c2-d7ad-475b-8073-6de2bbdf6405
+
+localResources:
+  docs:
+    - ..\vendor\laravel\framework\src\Illuminate\View\LICENSE.md
