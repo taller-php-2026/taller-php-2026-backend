@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Horario;
+use App\Http\Requests\StoreHorarioRequest;
+use App\Http\Requests\UpdateHorarioRequest;
+use App\Services\HorarioService;
 
 class HorarioController extends Controller
 {
-        public function index()
+    public function __construct(private HorarioService $horarioService) {}
+
+    public function index()
     {
-        return Horario::all();
+        $horarios = $this->horarioService->getAll();
+
+        return response()->json([
+            'data' => $horarios,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreHorarioRequest $request)
     {
-        $horario = Horario::create($request->all());
+        $horario = $this->horarioService->create($request->validated());
 
-        return response()->json($horario, 201);
+        return response()->json([
+            'message' => 'Horario creado correctamente',
+            'data'    => $horario,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Horario::findOrFail($id);
+        $horario = $this->horarioService->getById((int) $id);
+
+        return response()->json([
+            'data' => $horario,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateHorarioRequest $request, $id)
     {
-        $horario = Horario::findOrFail($id);
+        $horario = $this->horarioService->getById((int) $id);
+        $horario = $this->horarioService->update($horario, $request->validated());
 
-        $horario->update($request->all());
-
-        return response()->json($horario, 200);
+        return response()->json([
+            'message' => 'Horario actualizado correctamente',
+            'data'    => $horario,
+        ]);
     }
 
     public function destroy($id)
     {
-        Horario::destroy($id);
+        $horario = $this->horarioService->getById((int) $id);
+        $this->horarioService->delete($horario);
 
         return response()->json([
-            'mensaje' => 'Horario eliminado correctamente'
-        ], 200);
+            'message' => 'Horario eliminado correctamente',
+        ]);
     }
 }
+

@@ -7,9 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Horario extends Model
 {
     protected $table = 'horarios';
-    protected $primaryKey = 'idAgenda';
+    protected $primaryKey = 'idHorario';
     protected $fillable = [
-        'idAgenda',
         'fecha',
         'horaInicio',
         'horaFin'
