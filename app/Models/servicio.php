@@ -9,14 +9,14 @@ class Servicio extends Model
     protected $table = 'servicios';
     protected $primaryKey = 'idServicio';
     protected $fillable = [
-        'idServicio',
-        'idProfesional',
         'nombre',
         'descripcion',
         'precio',
         'duracionMinutos',
         'activo',
-        'modalidad'
+        'modalidad',
+        'idUbicacion',
+        'idVideoSesion'
     ];
 
     public function profesional()

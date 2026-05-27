@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Servicio;
+use App\Http\Requests\StoreServicioRequest;
+use App\Http\Requests\UpdateServicioRequest;
+use App\Services\ServicioService;
 
 class ServicioController extends Controller
 {
-        public function index()
+    public function __construct(private ServicioService $servicioService) {}
+
+    public function index()
     {
-        return Servicio::all();
+        $servicios = $this->servicioService->getAll();
+
+        return response()->json([
+            'data' => $servicios,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreServicioRequest $request)
     {
-        $servicio = Servicio::create($request->all());
+        $servicio = $this->servicioService->create($request->validated());
 
-        return response()->json($servicio, 201);
+        return response()->json([
+            'message' => 'Servicio creado correctamente',
+            'data'    => $servicio,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Servicio::findOrFail($id);
+        $servicio = $this->servicioService->getById((int) $id);
+
+        return response()->json([
+            'data' => $servicio,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateServicioRequest $request, $id)
     {
-        $servicio = Servicio::findOrFail($id);
+        $servicio = $this->servicioService->getById((int) $id);
+        $servicio = $this->servicioService->update($servicio, $request->validated());
 
-        $servicio->update($request->all());
-
-        return response()->json($servicio, 200);
+        return response()->json([
+            'message' => 'Servicio actualizado correctamente',
+            'data'    => $servicio,
+        ]);
     }
 
     public function destroy($id)
     {
-        Servicio::destroy($id);
+        $servicio = $this->servicioService->getById((int) $id);
+        $this->servicioService->delete($servicio);
 
         return response()->json([
-            'mensaje' => 'Servicio eliminado correctamente'
-        ], 200);
+            'message' => 'Servicio eliminado correctamente',
+        ]);
     }
 }
+
