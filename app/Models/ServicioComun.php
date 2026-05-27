@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ServicioComun extends Model
 {
-    protected $table = 'servicios';
-    protected $primaryKey = 'idServicio';
+    protected $table = 'servicios_comunes';
+    protected $primaryKey = 'idServicioComun';
     protected $fillable = [
         'idServicio'
     ];

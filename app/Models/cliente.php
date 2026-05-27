@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Usuario;
+use App\Models\Resena;
+use App\Models\Reserva;
 
 class Cliente extends Model
 {
@@ -15,16 +18,16 @@ class Cliente extends Model
     
     public function usuario()
     {
-        return $this->belongsTo(usuario::class, 'idUsuario');
+        return $this->belongsTo(Usuario::class, 'idUsuario');
     }
 
     public function resena()
     {
-        return $this->hasMany(resena::class, 'idCliente');
+        return $this->hasMany(Resena::class, 'idCliente');
     }
 
     public function reserva()
     {
-        return $this->hasMany(reserva::class, 'idCliente');
+        return $this->hasMany(Reserva::class, 'idCliente');
     }
 }

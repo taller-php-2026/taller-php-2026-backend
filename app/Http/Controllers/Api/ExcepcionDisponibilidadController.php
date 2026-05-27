@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use app\Models\ExcepcionDisponibilidad;
+use App\Models\ExcepcionDisponibilidad;
 
 class ExcepcionDisponibilidadController extends Controller
 {
