@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Reserva;
+use App\Http\Requests\StoreReservaRequest;
+use App\Http\Requests\UpdateReservaRequest;
+use App\Services\ReservaService;
 
 class ReservaController extends Controller
 {
-        public function index()
+    public function __construct(private ReservaService $reservaService) {}
+
+    public function index()
     {
-        return Reserva::all();
+        $reservas = $this->reservaService->getAll();
+
+        return response()->json([
+            'data' => $reservas,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreReservaRequest $request)
     {
-        $reserva = Reserva::create($request->all());
+        $reserva = $this->reservaService->create($request->validated());
 
-        return response()->json($reserva, 201);
+        return response()->json([
+            'message' => 'Reserva creada correctamente',
+            'data'    => $reserva,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Reserva::findOrFail($id);
+        $reserva = $this->reservaService->getById((int) $id);
+
+        return response()->json([
+            'data' => $reserva,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateReservaRequest $request, $id)
     {
-        $reserva = Reserva::findOrFail($id);
+        $reserva = $this->reservaService->getById((int) $id);
+        $reserva = $this->reservaService->update($reserva, $request->validated());
 
-        $reserva->update($request->all());
-
-        return response()->json($reserva, 200);
+        return response()->json([
+            'message' => 'Reserva actualizada correctamente',
+            'data'    => $reserva,
+        ]);
     }
 
     public function destroy($id)
     {
-        Reserva::destroy($id);
+        $reserva = $this->reservaService->getById((int) $id);
+        $this->reservaService->delete($reserva);
 
         return response()->json([
-            'mensaje' => 'Reserva eliminada correctamente'
-        ], 200);
+            'message' => 'Reserva eliminada correctamente',
+        ]);
     }
 }
+
