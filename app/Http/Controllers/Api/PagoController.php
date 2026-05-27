@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Pago;
+use App\Http\Requests\StorePagoRequest;
+use App\Http\Requests\UpdatePagoRequest;
+use App\Services\PagoService;
 
 class PagoController extends Controller
 {
-        public function index()
+    public function __construct(private PagoService $pagoService) {}
+
+    public function index()
     {
-        return Pago::all();
+        $pagos = $this->pagoService->getAll();
+
+        return response()->json([
+            'data' => $pagos,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePagoRequest $request)
     {
-        $pago = Pago::create($request->all());
+        $pago = $this->pagoService->create($request->validated());
 
-        return response()->json($pago, 201);
+        return response()->json([
+            'message' => 'Pago creado correctamente',
+            'data'    => $pago,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Pago::findOrFail($id);
+        $pago = $this->pagoService->getById((int) $id);
+
+        return response()->json([
+            'data' => $pago,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePagoRequest $request, $id)
     {
-        $pago = Pago::findOrFail($id);
+        $pago = $this->pagoService->getById((int) $id);
+        $pago = $this->pagoService->update($pago, $request->validated());
 
-        $pago->update($request->all());
-
-        return response()->json($pago, 200);
+        return response()->json([
+            'message' => 'Pago actualizado correctamente',
+            'data'    => $pago,
+        ]);
     }
 
     public function destroy($id)
     {
-        Pago::destroy($id);
+        $pago = $this->pagoService->getById((int) $id);
+        $this->pagoService->delete($pago);
 
         return response()->json([
-            'mensaje' => 'Pago eliminado correctamente'
-        ], 200);
+            'message' => 'Pago eliminado correctamente',
+        ]);
     }
 }
+
