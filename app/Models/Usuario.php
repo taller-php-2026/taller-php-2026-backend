@@ -16,6 +16,8 @@ class Usuario extends Model
         'activo'
     ];
 
+    protected $hidden = ['password'];
+
     public function cliente()
     {
         return $this->hasOne(Cliente::class, 'idUsuario');
