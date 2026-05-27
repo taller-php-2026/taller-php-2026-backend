@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PagarReservaRequest;
 use App\Http\Requests\StoreReservaRequest;
 use App\Http\Requests\UpdateReservaRequest;
 use App\Services\ReservaService;
@@ -57,6 +58,16 @@ class ReservaController extends Controller
 
         return response()->json([
             'message' => 'Reserva eliminada correctamente',
+        ]);
+    }
+
+    public function pagar(PagarReservaRequest $request, $id)
+    {
+        $reserva = $this->reservaService->pagar((int) $id, $request->validated());
+
+        return response()->json([
+            'message' => 'Pago procesado correctamente',
+            'data'    => $reserva,
         ]);
     }
 }
