@@ -3,43 +3,60 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Agenda;
+use App\Http\Requests\StoreAgendaRequest;
+use App\Http\Requests\UpdateAgendaRequest;
+use App\Services\AgendaService;
 
 class AgendaController extends Controller
 {
+    public function __construct(private AgendaService $agendaService) {}
+
     public function index()
     {
-        return Agenda::all();
+        $agendas = $this->agendaService->getAll();
+
+        return response()->json([
+            'data' => $agendas,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreAgendaRequest $request)
     {
-        $agenda = Agenda::create($request->all());
+        $agenda = $this->agendaService->create($request->validated());
 
-        return response()->json($agenda, 201);
+        return response()->json([
+            'message' => 'Agenda creada correctamente',
+            'data'    => $agenda,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Agenda::findOrFail($id);
+        $agenda = $this->agendaService->getById((int) $id);
+
+        return response()->json([
+            'data' => $agenda,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateAgendaRequest $request, $id)
     {
-        $agenda = Agenda::findOrFail($id);
+        $agenda = $this->agendaService->getById((int) $id);
+        $agenda = $this->agendaService->update($agenda, $request->validated());
 
-        $agenda->update($request->all());
-
-        return response()->json($agenda, 200);
+        return response()->json([
+            'message' => 'Agenda actualizada correctamente',
+            'data'    => $agenda,
+        ]);
     }
 
     public function destroy($id)
     {
-        Agenda::destroy($id);
+        $agenda = $this->agendaService->getById((int) $id);
+        $this->agendaService->delete($agenda);
 
         return response()->json([
-            'mensaje' => 'Agenda eliminada correctamente'
-        ], 200);
+            'message' => 'Agenda eliminada correctamente',
+        ]);
     }
 }
