@@ -2,14 +2,17 @@
 
 namespace App\Services;
 
+use App\Models\Horario;
 use App\Models\Pago;
 use App\Models\Reserva;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ReservaService
 {
+    public function __construct(private DisponibilidadService $disponibilidadService) {}
     private const ESTADOS_ACTIVOS = ['pendiente', 'confirmada', 'enCurso'];
 
     private const WITH_RELATIONS = [
@@ -97,6 +100,59 @@ class ReservaService
             $reserva->save();
 
             return $reserva->fresh(self::WITH_RELATIONS);
+        });
+    }
+
+    public function reprogramar(int $id, array $data): array
+    {
+        $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
+
+        match ($reserva->estado) {
+            'cancelada'  => throw new HttpException(409, 'No se puede reprogramar una reserva cancelada.'),
+            'completada' => throw new HttpException(409, 'No se puede reprogramar una reserva completada.'),
+            'enCurso'    => throw new HttpException(409, 'No se puede reprogramar una reserva que está en curso.'),
+            default      => null,
+        };
+
+        $fecha      = $data['fecha'];
+        $horaInicio = $data['horaInicio'];
+
+        $disponibilidad = $this->disponibilidadService->getDisponibilidad(
+            $reserva->idProfesional,
+            $fecha,
+            $reserva->idServicio,
+            $reserva->idReserva
+        );
+
+        $slot = collect($disponibilidad['slots_disponibles'])->firstWhere('horaInicio', $horaInicio);
+
+        if (!$slot) {
+            throw new HttpResponseException(
+                response()->json(
+                    ['message' => 'El slot solicitado no está disponible para reprogramar.'],
+                    409
+                )
+            );
+        }
+
+        $horaFin = $slot['horaFin'];
+
+        return DB::transaction(function () use ($reserva, $fecha, $horaInicio, $horaFin) {
+            $nuevoHorario = Horario::create([
+                'fecha'      => $fecha,
+                'horaInicio' => $horaInicio,
+                'horaFin'    => $horaFin,
+            ]);
+
+            $reserva->update([
+                'idHorario'    => $nuevoHorario->idHorario,
+                'fechaReserva' => "{$fecha} {$horaInicio}:00",
+            ]);
+
+            return [
+                'reserva' => $reserva->fresh(self::WITH_RELATIONS),
+                'horario' => $nuevoHorario,
+            ];
         });
     }
 
