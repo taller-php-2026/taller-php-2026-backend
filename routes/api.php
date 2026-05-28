@@ -20,7 +20,8 @@ use App\Http\Controllers\Api\DisponibilidadController;
 use App\Http\Controllers\Api\PagoController;
 use App\Http\Controllers\Api\PaqueteServicioController;
 use App\Http\Controllers\Api\CicloController;
-use App\Http\Controllers\Api\RangoHorarioController;    
+use App\Http\Controllers\Api\RangoHorarioController;
+use App\Http\Controllers\Api\AuthController;
 
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);
@@ -42,3 +43,8 @@ Route::apiResource('pagos', PagoController::class);
 Route::apiResource('paquete-servicios', PaqueteServicioController::class);
 Route::apiResource('ciclos', CicloController::class);
 Route::apiResource('rangos-horarios', RangoHorarioController::class);
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+});
