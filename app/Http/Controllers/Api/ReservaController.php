@@ -61,6 +61,16 @@ class ReservaController extends Controller
         ]);
     }
 
+    public function cancelar($id)
+    {
+        $reserva = $this->reservaService->cancelar((int) $id);
+
+        return response()->json([
+            'message' => 'Reserva cancelada correctamente',
+            'data'    => $reserva,
+        ]);
+    }
+
     public function pagar(PagarReservaRequest $request, $id)
     {
         $reserva = $this->reservaService->pagar((int) $id, $request->validated());

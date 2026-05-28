@@ -30,6 +30,7 @@ Route::get('profesionales/{id}/disponibilidad', [DisponibilidadController::class
 Route::post('profesionales/{id}/reservar-slot', [ReservaSlotController::class, 'reservar']);
 Route::apiResource('reservas', ReservaController::class);
 Route::post('reservas/{id}/pagar', [ReservaController::class, 'pagar']);
+Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
 Route::apiResource('servicios', ServicioController::class);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
