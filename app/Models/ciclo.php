@@ -7,9 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Ciclo extends Model
 {
     protected $table = 'ciclos';
-    protected $primaryKey = 'idCiclos';
+    protected $primaryKey = 'idCiclo';
     protected $fillable = [
-        'idCiclos',
         'nombre'
     ];
 

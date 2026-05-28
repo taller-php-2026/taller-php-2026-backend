@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Ciclo;
+use App\Http\Requests\StoreCicloRequest;
+use App\Http\Requests\UpdateCicloRequest;
+use App\Services\CicloService;
 
 class CicloController extends Controller
 {
-        public function index()
+    public function __construct(private CicloService $cicloService) {}
+
+    public function index()
     {
-        return Ciclo::all();
+        $ciclos = $this->cicloService->getAll();
+
+        return response()->json([
+            'data' => $ciclos,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreCicloRequest $request)
     {
-        $ciclo = Ciclo::create($request->all());
+        $ciclo = $this->cicloService->create($request->validated());
 
-        return response()->json($ciclo, 201);
+        return response()->json([
+            'message' => 'Ciclo creado correctamente',
+            'data'    => $ciclo,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Ciclo::findOrFail($id);
+        $ciclo = $this->cicloService->getById((int) $id);
+
+        return response()->json([
+            'data' => $ciclo,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateCicloRequest $request, $id)
     {
-        $ciclo = Ciclo::findOrFail($id);
+        $ciclo = $this->cicloService->getById((int) $id);
+        $ciclo = $this->cicloService->update($ciclo, $request->validated());
 
-        $ciclo->update($request->all());
-
-        return response()->json($ciclo, 200);
+        return response()->json([
+            'message' => 'Ciclo actualizado correctamente',
+            'data'    => $ciclo,
+        ]);
     }
 
     public function destroy($id)
     {
-        Ciclo::destroy($id);
+        $ciclo = $this->cicloService->getById((int) $id);
+        $this->cicloService->delete($ciclo);
 
         return response()->json([
-            'mensaje' => 'Ciclo eliminado correctamente'
-        ], 200);
+            'message' => 'Ciclo eliminado correctamente',
+        ]);
     }
 }
+
