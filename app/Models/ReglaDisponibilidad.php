@@ -3,23 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Agenda;
+use App\Models\Profesional;
 
 class ReglaDisponibilidad extends Model
 {
     protected $table = 'reglas_disponibilidad';
-    protected $primaryKey = 'idAgenda';
+    protected $primaryKey = 'idRegla';
     protected $fillable = [
-        'idAgenda',
-        'diaSemana',
+        'dia_semana',
         'horaInicio',
         'horaFin',
         'pausaMinutos',
-        'duracionMinutos',
-        'activo'
+        'bufferMinutos',
+        'activa',
+        'idAgenda',
+        'idProfesional'
     ];
 
     public function agenda()
     {
         return $this->belongsTo(Agenda::class, 'idAgenda');
+    }
+
+    public function profesional()
+    {
+        return $this->belongsTo(Profesional::class, 'idProfesional', 'idUsuario');
     }
 }

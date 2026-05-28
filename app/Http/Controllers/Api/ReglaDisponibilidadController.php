@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\ReglaDisponibilidad;
+use App\Http\Requests\StoreReglaDisponibilidadRequest;
+use App\Http\Requests\UpdateReglaDisponibilidadRequest;
+use App\Services\ReglaDisponibilidadService;
 
 class ReglaDisponibilidadController extends Controller
 {
-        public function index()
+    public function __construct(private ReglaDisponibilidadService $reglaService) {}
+
+    public function index()
     {
-        return ReglaDisponibilidad::all();
+        $reglas = $this->reglaService->getAll();
+
+        return response()->json([
+            'data' => $reglas,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreReglaDisponibilidadRequest $request)
     {
-        $reglaDisponibilidad = ReglaDisponibilidad::create($request->all());
+        $regla = $this->reglaService->create($request->validated());
 
-        return response()->json($reglaDisponibilidad, 201);
+        return response()->json([
+            'message' => 'Regla de disponibilidad creada correctamente',
+            'data'    => $regla,
+        ], 201);
     }
 
     public function show($id)
     {
-        return ReglaDisponibilidad::findOrFail($id);
+        $regla = $this->reglaService->getById((int) $id);
+
+        return response()->json([
+            'data' => $regla,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateReglaDisponibilidadRequest $request, $id)
     {
-        $reglaDisponibilidad = ReglaDisponibilidad::findOrFail($id);
+        $regla = $this->reglaService->getById((int) $id);
+        $regla = $this->reglaService->update($regla, $request->validated());
 
-        $reglaDisponibilidad->update($request->all());
-
-        return response()->json($reglaDisponibilidad, 200);
+        return response()->json([
+            'message' => 'Regla de disponibilidad actualizada correctamente',
+            'data'    => $regla,
+        ]);
     }
 
     public function destroy($id)
     {
-        ReglaDisponibilidad::destroy($id);
+        $regla = $this->reglaService->getById((int) $id);
+        $this->reglaService->delete($regla);
 
         return response()->json([
-            'mensaje' => 'Regla de disponibilidad eliminada correctamente'
-        ], 200);
+            'message' => 'Regla de disponibilidad eliminada correctamente',
+        ]);
     }
 }
+
