@@ -3,42 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Usuario;
+use App\Http\Requests\StoreUsuarioRequest;
+use App\Http\Requests\UpdateUsuarioRequest;
+use App\Services\UsuarioService;
+
 class UsuarioController extends Controller
 {
-        public function index()
+    public function __construct(private UsuarioService $usuarioService) {}
+
+    public function index()
     {
-        return Usuario::all();
+        $usuarios = $this->usuarioService->getAll();
+
+        return response()->json([
+            'data' => $usuarios,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreUsuarioRequest $request)
     {
-        $usuario = Usuario::create($request->all());
+        $usuario = $this->usuarioService->create($request->validated());
 
-        return response()->json($usuario, 201);
+        return response()->json([
+            'message' => 'Usuario creado correctamente',
+            'data'    => $usuario,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Usuario::findOrFail($id);
+        $usuario = $this->usuarioService->getById((int) $id);
+
+        return response()->json([
+            'data' => $usuario,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateUsuarioRequest $request, $id)
     {
-        $usuario = Usuario::findOrFail($id);
+        $usuario = $this->usuarioService->getById((int) $id);
+        $usuario = $this->usuarioService->update($usuario, $request->validated());
 
-        $usuario->update($request->all());
-
-        return response()->json($usuario, 200);
+        return response()->json([
+            'message' => 'Usuario actualizado correctamente',
+            'data'    => $usuario,
+        ]);
     }
 
     public function destroy($id)
     {
-        Usuario::destroy($id);
+        $usuario = $this->usuarioService->getById((int) $id);
+        $this->usuarioService->delete($usuario);
 
         return response()->json([
-            'mensaje' => 'Usuario eliminado correctamente'
-        ], 200);
+            'message' => 'Usuario eliminado correctamente',
+        ]);
     }
 }
+
