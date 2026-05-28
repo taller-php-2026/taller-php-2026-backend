@@ -3,17 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Ciclo;
 
 class RangoHorario extends Model
 {
-    protected $table = 'rangos_horario';
-    protected $primaryKey = 'idHorario';
+    protected $table = 'rango_horarios';
+    protected $primaryKey = 'idRango';
     protected $fillable = [
-        'idHorario',
-        'idCiclo',
         'diaSemana',
         'horaInicio',
-        'horaFin'
+        'horaFin',
+        'idCiclo'
     ];
 
     public function ciclo()
