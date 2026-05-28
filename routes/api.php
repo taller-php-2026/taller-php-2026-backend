@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\HorarioController;
 use App\Http\Controllers\Api\ExcepcionDisponibilidadController;
 use App\Http\Controllers\Api\NotificacionController;
+use App\Http\Controllers\Api\DisponibilidadController;
 use App\Http\Controllers\Api\PagoController;
 use App\Http\Controllers\Api\PaqueteServicioController;
 use App\Http\Controllers\Api\CicloController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Api\RangoHorarioController;
 
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);
+Route::get('profesionales/{id}/disponibilidad', [DisponibilidadController::class, 'porProfesional']);
 Route::apiResource('reservas', ReservaController::class);
 Route::post('reservas/{id}/pagar', [ReservaController::class, 'pagar']);
 Route::apiResource('servicios', ServicioController::class);
