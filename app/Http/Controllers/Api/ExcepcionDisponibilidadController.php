@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\ExcepcionDisponibilidad;
+use App\Http\Requests\StoreExcepcionDisponibilidadRequest;
+use App\Http\Requests\UpdateExcepcionDisponibilidadRequest;
+use App\Services\ExcepcionDisponibilidadService;
 
 class ExcepcionDisponibilidadController extends Controller
 {
-        public function index()
+    public function __construct(private ExcepcionDisponibilidadService $excepcionService) {}
+
+    public function index()
     {
-        return ExcepcionDisponibilidad::all();
+        $excepciones = $this->excepcionService->getAll();
+
+        return response()->json([
+            'data' => $excepciones,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreExcepcionDisponibilidadRequest $request)
     {
-        $excepcion = ExcepcionDisponibilidad::create($request->all());
+        $excepcion = $this->excepcionService->create($request->validated());
 
-        return response()->json($excepcion, 201);
+        return response()->json([
+            'message' => 'Excepción de disponibilidad creada correctamente',
+            'data'    => $excepcion,
+        ], 201);
     }
 
     public function show($id)
     {
-        return ExcepcionDisponibilidad::findOrFail($id);
+        $excepcion = $this->excepcionService->getById((int) $id);
+
+        return response()->json([
+            'data' => $excepcion,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateExcepcionDisponibilidadRequest $request, $id)
     {
-        $excepcion = ExcepcionDisponibilidad::findOrFail($id);
+        $excepcion = $this->excepcionService->getById((int) $id);
+        $excepcion = $this->excepcionService->update($excepcion, $request->validated());
 
-        $excepcion->update($request->all());
-
-        return response()->json($excepcion, 200);
+        return response()->json([
+            'message' => 'Excepción de disponibilidad actualizada correctamente',
+            'data'    => $excepcion,
+        ]);
     }
 
     public function destroy($id)
     {
-        ExcepcionDisponibilidad::destroy($id);
+        $excepcion = $this->excepcionService->getById((int) $id);
+        $this->excepcionService->delete($excepcion);
 
         return response()->json([
-            'mensaje' => 'Excepción de disponibilidad eliminada correctamente'
-        ], 200);
+            'message' => 'Excepción de disponibilidad eliminada correctamente',
+        ]);
     }
 }
+
