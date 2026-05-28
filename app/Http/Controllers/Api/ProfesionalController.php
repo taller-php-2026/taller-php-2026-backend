@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Profesional;
+use App\Http\Requests\StoreProfesionalRequest;
+use App\Http\Requests\UpdateProfesionalRequest;
+use App\Services\ProfesionalService;
 
 class ProfesionalController extends Controller
 {
-        public function index()
+    public function __construct(private ProfesionalService $profesionalService) {}
+
+    public function index()
     {
-        return Profesional::all();
+        $profesionales = $this->profesionalService->getAll();
+
+        return response()->json([
+            'data' => $profesionales,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreProfesionalRequest $request)
     {
-        $profesional = Profesional::create($request->all());
+        $profesional = $this->profesionalService->create($request->validated());
 
-        return response()->json($profesional, 201);
+        return response()->json([
+            'message' => 'Profesional creado correctamente',
+            'data'    => $profesional,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Profesional::findOrFail($id);
+        $profesional = $this->profesionalService->getById((int) $id);
+
+        return response()->json([
+            'data' => $profesional,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateProfesionalRequest $request, $id)
     {
-        $profesional = Profesional::findOrFail($id);
+        $profesional = $this->profesionalService->getById((int) $id);
+        $profesional = $this->profesionalService->update($profesional, $request->validated());
 
-        $profesional->update($request->all());
-
-        return response()->json($profesional, 200);
+        return response()->json([
+            'message' => 'Profesional actualizado correctamente',
+            'data'    => $profesional,
+        ]);
     }
 
     public function destroy($id)
     {
-        Profesional::destroy($id);
+        $profesional = $this->profesionalService->getById((int) $id);
+        $this->profesionalService->delete($profesional);
 
         return response()->json([
-            'mensaje' => 'Profesional eliminado correctamente'
-        ], 200);
+            'message' => 'Profesional eliminado correctamente',
+        ]);
     }
 }
+
