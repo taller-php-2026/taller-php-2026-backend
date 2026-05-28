@@ -99,4 +99,23 @@ class ReservaService
             return $reserva->fresh(self::WITH_RELATIONS);
         });
     }
+
+    public function cancelar(int $id): Reserva
+    {
+        $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
+
+        match ($reserva->estado) {
+            'cancelada'  => throw new HttpException(409, 'La reserva ya está cancelada.'),
+            'completada' => throw new HttpException(409, 'No se puede cancelar una reserva completada.'),
+            'enCurso'    => throw new HttpException(409, 'No se puede cancelar una reserva que está en curso.'),
+            default      => null,
+        };
+
+        return DB::transaction(function () use ($reserva) {
+            $reserva->estado = 'cancelada';
+            $reserva->save();
+
+            return $reserva->fresh(self::WITH_RELATIONS);
+        });
+    }
 }
