@@ -3,25 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Ciclo;
+use App\Models\ReglaDisponibilidad;
+use App\Models\ExcepcionDisponibilidad;
 
 class Agenda extends Model
 {
     protected $table = 'agendas';
     protected $primaryKey = 'idAgenda';
     protected $fillable = [
-        'idAgenda',
-        'idProfesional',
         'idCiclo'
     ];
 
-    public function profesional()
+    public function ciclo()
     {
-        return $this->belongsTo(Profesional::class, 'idProfesional');
-    }
-
-    public function horarios()
-    {
-        return $this->hasMany(Horario::class, 'idAgenda');
+        return $this->belongsTo(Ciclo::class, 'idCiclo');
     }
 
     public function reglasDisponibilidad()
@@ -32,10 +28,5 @@ class Agenda extends Model
     public function excepcionesDisponibilidad()
     {
         return $this->hasMany(ExcepcionDisponibilidad::class, 'idAgenda');
-    }
-
-     public function ciclo()
-    {
-        return $this->belongsTo(Ciclo::class, 'idCiclo');
     }
 }
