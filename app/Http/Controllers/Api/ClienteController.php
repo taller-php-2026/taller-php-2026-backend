@@ -3,43 +3,61 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Cliente;
+use App\Http\Requests\StoreClienteRequest;
+use App\Http\Requests\UpdateClienteRequest;
+use App\Services\ClienteService;
 
 class ClienteController extends Controller
 {
-        public function index()
+    public function __construct(private ClienteService $clienteService) {}
+
+    public function index()
     {
-        return Cliente::all();
+        $clientes = $this->clienteService->getAll();
+
+        return response()->json([
+            'data' => $clientes,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreClienteRequest $request)
     {
-        $cliente = Cliente::create($request->all());
+        $cliente = $this->clienteService->create($request->validated());
 
-        return response()->json($cliente, 201);
+        return response()->json([
+            'message' => 'Cliente creado correctamente',
+            'data'    => $cliente,
+        ], 201);
     }
 
     public function show($id)
     {
-        return Cliente::findOrFail($id);
+        $cliente = $this->clienteService->getById((int) $id);
+
+        return response()->json([
+            'data' => $cliente,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateClienteRequest $request, $id)
     {
-        $cliente = Cliente::findOrFail($id);
+        $cliente = $this->clienteService->getById((int) $id);
+        $cliente = $this->clienteService->update($cliente, $request->validated());
 
-        $cliente->update($request->all());
-
-        return response()->json($cliente, 200);
+        return response()->json([
+            'message' => 'Cliente actualizado correctamente',
+            'data'    => $cliente,
+        ]);
     }
 
     public function destroy($id)
     {
-        Cliente::destroy($id);
+        $cliente = $this->clienteService->getById((int) $id);
+        $this->clienteService->delete($cliente);
 
         return response()->json([
-            'mensaje' => 'Cliente eliminado correctamente'
-        ], 200);
+            'message' => 'Cliente eliminado correctamente',
+        ]);
     }
 }
+
