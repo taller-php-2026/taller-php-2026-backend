@@ -14,7 +14,8 @@ class DisponibilidadProfesionalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fecha' => 'required|date',
+            'fecha'      => 'required|date_format:Y-m-d',
+            'idServicio' => 'required|integer|exists:servicios,idServicio',
         ];
     }
 }

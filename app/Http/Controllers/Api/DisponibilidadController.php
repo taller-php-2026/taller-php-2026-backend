@@ -12,9 +12,12 @@ class DisponibilidadController extends Controller
 
     public function porProfesional(DisponibilidadProfesionalRequest $request, $id)
     {
+        $validated = $request->validated();
+
         $data = $this->disponibilidadService->getDisponibilidad(
             (int) $id,
-            $request->validated()['fecha']
+            $validated['fecha'],
+            (int) $validated['idServicio']
         );
 
         return response()->json([
