@@ -24,7 +24,7 @@ class DisponibilidadService
 
     private const ESTADOS_ACTIVOS = ['pendiente', 'confirmada', 'enCurso'];
 
-    public function getDisponibilidad(int $idProfesional, string $fecha, int $idServicio): array
+    public function getDisponibilidad(int $idProfesional, string $fecha, int $idServicio, ?int $reservaIgnoradaId = null): array
     {
         $profesional = Profesional::with('usuario')->findOrFail($idProfesional);
         $servicio    = Servicio::findOrFail($idServicio);
@@ -44,11 +44,16 @@ class DisponibilidadService
             ->where('fecha', $fecha)
             ->get();
 
-        $reservasActivas = Reserva::with('horario')
+        $queryReservas = Reserva::with('horario')
             ->where('idProfesional', $idProfesional)
             ->whereIn('estado', self::ESTADOS_ACTIVOS)
-            ->whereHas('horario', fn ($q) => $q->where('fecha', $fecha))
-            ->get();
+            ->whereHas('horario', fn ($q) => $q->where('fecha', $fecha));
+
+        if ($reservaIgnoradaId !== null) {
+            $queryReservas->where('idReserva', '!=', $reservaIgnoradaId);
+        }
+
+        $reservasActivas = $queryReservas->get();
 
         $duracion = (int) $servicio->duracionMinutos;
 
