@@ -91,5 +91,15 @@ class ReservaController extends Controller
             'data'    => $reserva,
         ]);
     }
+
+    public function completar($id)
+    {
+        $reserva = $this->reservaService->completar((int) $id);
+
+        return response()->json([
+            'message' => 'Reserva completada correctamente',
+            'data'    => $reserva,
+        ]);
+    }
 }
 
