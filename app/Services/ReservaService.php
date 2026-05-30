@@ -174,4 +174,23 @@ class ReservaService
             return $reserva->fresh(self::WITH_RELATIONS);
         });
     }
+
+    public function completar(int $id): Reserva
+    {
+        $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
+
+        match ($reserva->estado) {
+            'pendiente'  => throw new HttpException(409, 'No se puede completar una reserva que está pendiente.'),
+            'cancelada'  => throw new HttpException(409, 'No se puede completar una reserva cancelada.'),
+            'completada' => throw new HttpException(409, 'La reserva ya está completada.'),
+            default      => null,
+        };
+
+        return DB::transaction(function () use ($reserva) {
+            $reserva->estado = 'completada';
+            $reserva->save();
+
+            return $reserva->fresh(self::WITH_RELATIONS);
+        });
+    }
 }
