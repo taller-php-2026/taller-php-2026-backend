@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\PaqueteCompradoController;
 use App\Http\Controllers\Api\CicloController;
 use App\Http\Controllers\Api\RangoHorarioController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\ReservaSlotController;
 
 Route::apiResource('clientes', ClienteController::class);
@@ -59,4 +60,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('reservas/{id}/video-token', [ReservaController::class, 'videoToken']);
+
+    Route::prefix('admin')->group(function () {
+        Route::get('metricas',               [AdminController::class, 'metricas']);
+        Route::get('reservas/profesionales', [AdminController::class, 'reservasPorProfesional']);
+        Route::get('reservas/servicios',     [AdminController::class, 'reservasPorServicio']);
+        Route::get('reservas',               [AdminController::class, 'reservas']);
+        Route::get('paquetes/resumen',       [AdminController::class, 'resumenPaquetes']);
+        Route::get('paquetes/servicios',     [AdminController::class, 'paquetesPorServicio']);
+        Route::get('paquetes',               [AdminController::class, 'paquetes']);
+    });
 });
