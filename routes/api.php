@@ -33,6 +33,7 @@ Route::post('reservas/{id}/pagar', [ReservaController::class, 'pagar']);
 Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
 Route::post('reservas/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
 Route::post('reservas/{id}/completar', [ReservaController::class, 'completar']);
+Route::post('reservas/{id}/resena', [ReservaController::class, 'resena']);
 Route::apiResource('servicios', ServicioController::class);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);

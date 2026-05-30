@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Horario;
 use App\Models\Pago;
 use App\Models\Reserva;
+use App\Models\Resena;
+use App\Models\Profesional;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
@@ -191,6 +193,43 @@ class ReservaService
             $reserva->save();
 
             return $reserva->fresh(self::WITH_RELATIONS);
+        });
+    }
+
+    public function resena(int $id, array $data): array
+    {
+        $reserva = Reserva::with(['cliente', 'profesional', 'servicio', 'horario'])->findOrFail($id);
+
+        if ($reserva->estado !== 'completada') {
+            throw new HttpException(422, 'Solo se puede reseñar una reserva completada.');
+        }
+
+        if (Resena::where('idReserva', $id)->exists()) {
+            throw new HttpException(409, 'Esta reserva ya tiene una reseña.');
+        }
+
+        return DB::transaction(function () use ($reserva, $data) {
+            $resena = Resena::create([
+                'calificacion'  => $data['calificacion'],
+                'comentario'    => $data['comentario'] ?? null,
+                'fecha'         => now()->toDateString(),
+                'idProfesional' => $reserva->idProfesional,
+                'idCliente'     => $reserva->idCliente,
+                'idReserva'     => $reserva->idReserva,
+            ]);
+
+            $nuevoRating = Resena::where('idProfesional', $reserva->idProfesional)->avg('calificacion');
+
+            $profesional = Profesional::findOrFail($reserva->idProfesional);
+            $profesional->ratingPromedio = round($nuevoRating, 2);
+            $profesional->save();
+
+            $resena->load(['reserva.horario', 'reserva.servicio']);
+
+            return [
+                'resena'      => $resena,
+                'profesional' => $profesional,
+            ];
         });
     }
 }
