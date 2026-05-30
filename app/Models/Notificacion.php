@@ -10,15 +10,14 @@ class Notificacion extends Model
     protected $primaryKey = 'idNotificacion';
     
     protected $fillable = [
-        'idNotificacion',
         'idUsuario',
         'titulo',
         'mensaje',
         'tipo',
         'leida',
-        'enviadaPorEmail',
+        'enviadaMail',
         'fechaCreacion',
-        'fechaLectura'
+        'fechaLectura',
     ];
 
     public function usuario()

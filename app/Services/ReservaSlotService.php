@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class ReservaSlotService
 {
-    public function __construct(private DisponibilidadService $disponibilidadService) {}
+    public function __construct(
+        private DisponibilidadService $disponibilidadService,
+        private NotificacionService $notificacionService
+    ) {}
 
     public function reservar(
         int $idProfesional,
@@ -81,6 +84,19 @@ class ReservaSlotService
                 'fechaReserva'  => "{$fecha} {$horaInicio}:00",
                 'estado'        => 'pendiente',
             ]);
+
+            $reserva->load(['servicio', 'cliente.usuario', 'profesional']);
+
+            $servicio    = $reserva->servicio->nombre        ?? 'No especificado';
+            $profesional = $reserva->profesional->nombreNegocio ?? 'No especificado';
+
+            $this->notificacionService->notificar(
+                $idCliente,
+                $reserva->cliente->usuario->email,
+                'Reserva creada correctamente',
+                "Tu reserva fue creada correctamente.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$horaInicio}\nEstado: pendiente",
+                'confirmacion'
+            );
 
             return [
                 'reserva' => $reserva,
@@ -166,6 +182,19 @@ class ReservaSlotService
             }
 
             $paquete->save();
+
+            $reserva->load(['servicio', 'cliente.usuario', 'profesional']);
+
+            $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
+            $profesional = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+
+            $this->notificacionService->notificar(
+                $idCliente,
+                $reserva->cliente->usuario->email,
+                'Reserva creada correctamente',
+                "Tu reserva fue creada correctamente.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$horaInicio}\nEstado: confirmada",
+                'confirmacion'
+            );
 
             return [
                 'reserva'         => $reserva,
