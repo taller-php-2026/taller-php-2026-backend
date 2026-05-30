@@ -13,8 +13,6 @@ class VideoTokenRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'idUsuario' => 'required|integer|exists:usuarios,idUsuario',
-        ];
+        return [];
     }
 }
