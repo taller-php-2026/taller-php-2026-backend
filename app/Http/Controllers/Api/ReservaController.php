@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PagarReservaRequest;
 use App\Http\Requests\ReprogramarReservaRequest;
+use App\Http\Requests\StoreResenaRequest;
 use App\Http\Requests\StoreReservaRequest;
 use App\Http\Requests\UpdateReservaRequest;
 use App\Services\ReservaService;
@@ -100,6 +101,16 @@ class ReservaController extends Controller
             'message' => 'Reserva completada correctamente',
             'data'    => $reserva,
         ]);
+    }
+
+    public function resena(StoreResenaRequest $request, $id)
+    {
+        $result = $this->reservaService->resena((int) $id, $request->validated());
+
+        return response()->json([
+            'message' => 'Reseña creada correctamente',
+            'data'    => $result,
+        ], 201);
     }
 }
 
