@@ -36,7 +36,6 @@ Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
 Route::post('reservas/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
 Route::post('reservas/{id}/completar', [ReservaController::class, 'completar']);
 Route::post('reservas/{id}/resena', [ReservaController::class, 'resena']);
-Route::post('reservas/{id}/video-token', [ReservaController::class, 'videoToken']);
 Route::apiResource('servicios', ServicioController::class);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
@@ -59,4 +58,5 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('reservas/{id}/video-token', [ReservaController::class, 'videoToken']);
 });

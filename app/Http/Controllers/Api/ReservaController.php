@@ -130,9 +130,11 @@ class ReservaController extends Controller
 
     public function videoToken(VideoTokenRequest $request, $id)
     {
+        $idUsuario = (int) $request->user()->idUsuario;
+
         $data = $this->liveKitService->generarTokenParaReserva(
             (int) $id,
-            (int) $request->validated()['idUsuario']
+            $idUsuario
         );
 
         return response()->json([
