@@ -196,6 +196,33 @@ class ReservaService
         });
     }
 
+    public function cancelarVencidas(): array
+    {
+        $vencidas = Reserva::with(self::WITH_RELATIONS)
+            ->where('estado', 'pendiente')
+            ->where('created_at', '<=', now()->subMinutes(15))
+            ->get();
+
+        if ($vencidas->isEmpty()) {
+            return [
+                'cantidadCanceladas' => 0,
+                'reservas'           => [],
+            ];
+        }
+
+        return DB::transaction(function () use ($vencidas) {
+            foreach ($vencidas as $reserva) {
+                $reserva->estado = 'cancelada';
+                $reserva->save();
+            }
+
+            return [
+                'cantidadCanceladas' => $vencidas->count(),
+                'reservas'           => $vencidas->map(fn ($r) => $r->fresh(self::WITH_RELATIONS))->values(),
+            ];
+        });
+    }
+
     public function resena(int $id, array $data): array
     {
         $reserva = Reserva::with(['cliente', 'profesional', 'servicio', 'horario'])->findOrFail($id);
