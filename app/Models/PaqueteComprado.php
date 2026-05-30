@@ -39,4 +39,9 @@ class PaqueteComprado extends Model
     {
         return $this->belongsTo(Pago::class, 'idPago', 'idPago');
     }
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class, 'idPaqueteComprado', 'idPaqueteComprado');
+    }
 }

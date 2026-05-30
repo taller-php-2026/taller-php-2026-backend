@@ -19,7 +19,8 @@ class ReservaSlotController extends Controller
             $validated['idCliente'],
             $validated['idServicio'],
             $validated['fecha'],
-            $validated['horaInicio']
+            $validated['horaInicio'],
+            isset($validated['idPaqueteComprado']) ? (int) $validated['idPaqueteComprado'] : null
         );
 
         return response()->json([
