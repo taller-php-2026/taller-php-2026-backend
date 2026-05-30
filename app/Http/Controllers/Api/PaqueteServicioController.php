@@ -3,43 +3,60 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\PaqueteServicio;
+use App\Http\Requests\StorePaqueteServicioRequest;
+use App\Http\Requests\UpdatePaqueteServicioRequest;
+use App\Services\PaqueteServicioService;
 
 class PaqueteServicioController extends Controller
 {
-        public function index()
+    public function __construct(private PaqueteServicioService $paqueteServicioService) {}
+
+    public function index()
     {
-        return PaqueteServicio::all();
+        $paquetes = $this->paqueteServicioService->getAll();
+
+        return response()->json([
+            'data' => $paquetes,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePaqueteServicioRequest $request)
     {
-        $paqueteServicio = PaqueteServicio::create($request->all());
+        $paquete = $this->paqueteServicioService->create($request->validated());
 
-        return response()->json($paqueteServicio, 201);
+        return response()->json([
+            'message' => 'Paquete de servicio creado correctamente',
+            'data'    => $paquete,
+        ], 201);
     }
 
     public function show($id)
     {
-        return PaqueteServicio::findOrFail($id);
+        $paquete = $this->paqueteServicioService->getById((int) $id);
+
+        return response()->json([
+            'data' => $paquete,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePaqueteServicioRequest $request, $id)
     {
-        $paqueteServicio = PaqueteServicio::findOrFail($id);
+        $paquete = $this->paqueteServicioService->getById((int) $id);
+        $paquete = $this->paqueteServicioService->update($paquete, $request->validated());
 
-        $paqueteServicio->update($request->all());
-
-        return response()->json($paqueteServicio, 200);
+        return response()->json([
+            'message' => 'Paquete de servicio actualizado correctamente',
+            'data'    => $paquete,
+        ]);
     }
 
     public function destroy($id)
     {
-        PaqueteServicio::destroy($id);
+        $paquete = $this->paqueteServicioService->getById((int) $id);
+        $this->paqueteServicioService->delete($paquete);
 
         return response()->json([
-            'mensaje' => 'Paquete de servicio eliminado correctamente'
-        ], 200);
+            'message' => 'Paquete de servicio eliminado correctamente',
+        ]);
     }
 }
