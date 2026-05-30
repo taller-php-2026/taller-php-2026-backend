@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaqueteServicio extends Model
 {
-    protected $table = 'paquetes_servicio';
-    protected $primaryKey = 'idServicio';
+    protected $table = 'paquetes_servicios';
+    protected $primaryKey = 'idPaqueteServicio';
     protected $fillable = [
         'idServicio',
         'totalSesiones',
@@ -17,6 +17,11 @@ class PaqueteServicio extends Model
     
     public function servicio()
     {
-        return $this->belongsTo(Servicio::class, 'idServicio');
+        return $this->belongsTo(Servicio::class, 'idServicio', 'idServicio');
+    }
+
+    public function paquetesComprados()
+    {
+        return $this->hasMany(PaqueteComprado::class, 'idPaqueteServicio', 'idPaqueteServicio');
     }
 }

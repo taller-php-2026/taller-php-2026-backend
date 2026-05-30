@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Usuario;
 use App\Models\Resena;
 use App\Models\Reserva;
+use App\Models\PaqueteComprado;
 
 class Cliente extends Model
 {
@@ -29,5 +30,10 @@ class Cliente extends Model
     public function reserva()
     {
         return $this->hasMany(Reserva::class, 'idCliente');
+    }
+
+    public function paquetesComprados()
+    {
+        return $this->hasMany(PaqueteComprado::class, 'idCliente', 'idUsuario');
     }
 }
