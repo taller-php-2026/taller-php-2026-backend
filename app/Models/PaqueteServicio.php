@@ -6,17 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaqueteServicio extends Model
 {
-    protected $table = 'paquetes_servicio';
-    protected $primaryKey = 'idServicio';
+    protected $table = 'paquetes_servicios';
+    protected $primaryKey = 'idPaqueteServicio';
     protected $fillable = [
         'idServicio',
         'totalSesiones',
         'precio',
-        'activo'
+        'activo',
     ];
-    
+
+    protected $casts = [
+        'activo' => 'boolean',
+    ];
+
     public function servicio()
     {
-        return $this->belongsTo(Servicio::class, 'idServicio');
+        return $this->belongsTo(Servicio::class, 'idServicio', 'idServicio');
     }
 }
