@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Horario;
 use App\Models\Pago;
+use App\Models\PaqueteComprado;
 use App\Models\Reserva;
 use App\Models\Resena;
 use App\Models\Profesional;
@@ -151,10 +152,16 @@ class ReservaService
                 'fechaReserva' => "{$fecha} {$horaInicio}:00",
             ]);
 
-            return [
+            $result = [
                 'reserva' => $reserva->fresh(self::WITH_RELATIONS),
                 'horario' => $nuevoHorario,
             ];
+
+            if ($reserva->idPaqueteComprado !== null) {
+                $result['paqueteComprado'] = PaqueteComprado::find($reserva->idPaqueteComprado);
+            }
+
+            return $result;
         });
     }
 
