@@ -15,7 +15,10 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ReservaService
 {
-    public function __construct(private DisponibilidadService $disponibilidadService) {}
+    public function __construct(
+        private DisponibilidadService $disponibilidadService,
+        private NotificacionService $notificacionService
+    ) {}
     private const ESTADOS_ACTIVOS = ['pendiente', 'confirmada', 'enCurso'];
 
     private const WITH_RELATIONS = [
@@ -161,6 +164,18 @@ class ReservaService
                 $result['paqueteComprado'] = PaqueteComprado::find($reserva->idPaqueteComprado);
             }
 
+            $reservaFresh = $result['reserva'];
+            $servicio     = $reservaFresh->servicio->nombre            ?? 'No especificado';
+            $profesional  = $reservaFresh->profesional->nombreNegocio  ?? 'No especificado';
+
+            $this->notificacionService->notificar(
+                $reservaFresh->idCliente,
+                $reservaFresh->cliente->usuario->email,
+                'Reserva reprogramada',
+                "Tu reserva fue reprogramada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nNueva fecha: {$fecha}\nNueva hora: {$horaInicio}",
+                'actualizacion'
+            );
+
             return $result;
         });
     }
@@ -181,6 +196,19 @@ class ReservaService
                 $reserva->estado = 'cancelada';
                 $reserva->save();
 
+                $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
+                $profesional = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+                $fecha       = substr($reserva->fechaReserva, 0, 10);
+                $hora        = substr($reserva->fechaReserva, 11, 5);
+
+                $this->notificacionService->notificar(
+                    $reserva->idCliente,
+                    $reserva->cliente->usuario->email,
+                    'Reserva cancelada',
+                    "Tu reserva fue cancelada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
+                    'cancelacion'
+                );
+
                 return [
                     'reserva' => $reserva->fresh(self::WITH_RELATIONS),
                 ];
@@ -192,6 +220,19 @@ class ReservaService
 
             $reserva->estado = 'cancelada';
             $reserva->save();
+
+            $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
+            $profesional = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+            $fecha       = substr($reserva->fechaReserva, 0, 10);
+            $hora        = substr($reserva->fechaReserva, 11, 5);
+
+            $this->notificacionService->notificar(
+                $reserva->idCliente,
+                $reserva->cliente->usuario->email,
+                'Reserva cancelada',
+                "Tu reserva fue cancelada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
+                'cancelacion'
+            );
 
             $paquete->sesionesUsadas    = max(0, $paquete->sesionesUsadas - 1);
             $paquete->sesionesRestantes = min($paquete->totalSesiones, $paquete->sesionesRestantes + 1);
