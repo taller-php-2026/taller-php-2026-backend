@@ -18,6 +18,7 @@ class Reserva extends Model
         'fechaReserva',
         'estado',
         'comentarios',
+        'idVideoSesion',
     ];
 
     public function pago()
@@ -48,5 +49,10 @@ class Reserva extends Model
     public function paqueteComprado()
     {
         return $this->belongsTo(PaqueteComprado::class, 'idPaqueteComprado', 'idPaqueteComprado');
+    }
+
+    public function videoSesion()
+    {
+        return $this->belongsTo(VideoSesion::class, 'idVideoSesion', 'idVideoSesion');
     }
 }
