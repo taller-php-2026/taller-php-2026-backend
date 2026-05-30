@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Horario;
+use App\Models\PaqueteComprado;
 use App\Models\Profesional;
 use App\Models\Reserva;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -17,7 +18,8 @@ class ReservaSlotService
         int $idCliente,
         int $idServicio,
         string $fecha,
-        string $horaInicio
+        string $horaInicio,
+        ?int $idPaqueteComprado = null
     ): array {
         Profesional::findOrFail($idProfesional);
 
@@ -41,7 +43,30 @@ class ReservaSlotService
 
         $horaFin = $slot['horaFin'];
 
-        return DB::transaction(function () use ($idProfesional, $idCliente, $idServicio, $fecha, $horaInicio, $horaFin) {
+        if ($idPaqueteComprado !== null) {
+            return $this->reservarConPaquete(
+                $idProfesional, $idCliente, $idServicio,
+                $fecha, $horaInicio, $horaFin, $idPaqueteComprado
+            );
+        }
+
+        return $this->reservarNormal(
+            $idProfesional, $idCliente, $idServicio,
+            $fecha, $horaInicio, $horaFin
+        );
+    }
+
+    private function reservarNormal(
+        int $idProfesional,
+        int $idCliente,
+        int $idServicio,
+        string $fecha,
+        string $horaInicio,
+        string $horaFin
+    ): array {
+        return DB::transaction(function () use (
+            $idProfesional, $idCliente, $idServicio, $fecha, $horaInicio, $horaFin
+        ) {
             $horario = Horario::create([
                 'fecha'      => $fecha,
                 'horaInicio' => $horaInicio,
@@ -49,12 +74,12 @@ class ReservaSlotService
             ]);
 
             $reserva = Reserva::create([
-                'idCliente'    => $idCliente,
+                'idCliente'     => $idCliente,
                 'idProfesional' => $idProfesional,
-                'idServicio'   => $idServicio,
-                'idHorario'    => $horario->idHorario,
-                'fechaReserva' => "{$fecha} {$horaInicio}:00",
-                'estado'       => 'pendiente',
+                'idServicio'    => $idServicio,
+                'idHorario'     => $horario->idHorario,
+                'fechaReserva'  => "{$fecha} {$horaInicio}:00",
+                'estado'        => 'pendiente',
             ]);
 
             return [
@@ -63,4 +88,91 @@ class ReservaSlotService
             ];
         });
     }
+
+    private function reservarConPaquete(
+        int $idProfesional,
+        int $idCliente,
+        int $idServicio,
+        string $fecha,
+        string $horaInicio,
+        string $horaFin,
+        int $idPaqueteComprado
+    ): array {
+        return DB::transaction(function () use (
+            $idProfesional, $idCliente, $idServicio,
+            $fecha, $horaInicio, $horaFin, $idPaqueteComprado
+        ) {
+            $paquete = PaqueteComprado::lockForUpdate()->findOrFail($idPaqueteComprado);
+
+            if ((int) $paquete->idCliente !== $idCliente) {
+                throw new HttpResponseException(
+                    response()->json(
+                        ['message' => 'El paquete no pertenece al cliente indicado.'],
+                        403
+                    )
+                );
+            }
+
+            if ($paquete->estado !== 'activo') {
+                throw new HttpResponseException(
+                    response()->json(
+                        ['message' => 'El paquete comprado no está activo.'],
+                        409
+                    )
+                );
+            }
+
+            if ($paquete->sesionesRestantes <= 0) {
+                throw new HttpResponseException(
+                    response()->json(
+                        ['message' => 'El paquete no tiene sesiones disponibles.'],
+                        409
+                    )
+                );
+            }
+
+            $paquete->load('paqueteServicio');
+
+            if ((int) $paquete->paqueteServicio->idServicio !== $idServicio) {
+                throw new HttpResponseException(
+                    response()->json(
+                        ['message' => 'El paquete seleccionado no corresponde al servicio solicitado.'],
+                        422
+                    )
+                );
+            }
+
+            $horario = Horario::create([
+                'fecha'      => $fecha,
+                'horaInicio' => $horaInicio,
+                'horaFin'    => $horaFin,
+            ]);
+
+            $reserva = Reserva::create([
+                'idCliente'         => $idCliente,
+                'idProfesional'     => $idProfesional,
+                'idServicio'        => $idServicio,
+                'idHorario'         => $horario->idHorario,
+                'idPaqueteComprado' => $idPaqueteComprado,
+                'fechaReserva'      => "{$fecha} {$horaInicio}:00",
+                'estado'            => 'confirmada',
+            ]);
+
+            $paquete->sesionesUsadas    += 1;
+            $paquete->sesionesRestantes -= 1;
+
+            if ($paquete->sesionesRestantes === 0) {
+                $paquete->estado = 'agotado';
+            }
+
+            $paquete->save();
+
+            return [
+                'reserva'         => $reserva,
+                'horario'         => $horario,
+                'paqueteComprado' => $paquete->fresh(),
+            ];
+        });
+    }
 }
+

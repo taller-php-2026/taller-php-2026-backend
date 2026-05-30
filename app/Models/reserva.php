@@ -14,9 +14,10 @@ class Reserva extends Model
         'idServicio',
         'idHorario',
         'idPago',
+        'idPaqueteComprado',
         'fechaReserva',
         'estado',
-        'comentarios'
+        'comentarios',
     ];
 
     public function pago()
@@ -42,5 +43,10 @@ class Reserva extends Model
     public function horario()
     {
         return $this->belongsTo(Horario::class, 'idHorario', 'idHorario');
+    }
+
+    public function paqueteComprado()
+    {
+        return $this->belongsTo(PaqueteComprado::class, 'idPaqueteComprado', 'idPaqueteComprado');
     }
 }
