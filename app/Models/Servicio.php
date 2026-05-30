@@ -44,5 +44,15 @@ class Servicio extends Model
         return $this->hasOne(VideoSesion::class, 'idServicio');
     }
 
+    public function profesionales()
+    {
+        return $this->belongsToMany(
+            Profesional::class,
+            'profesionales_servicios',
+            'idServicio',
+            'idProfesional'
+        );
+    }
+
 }
  

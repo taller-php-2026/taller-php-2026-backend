@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BuscarServiciosRequest;
 use App\Http\Requests\StoreServicioRequest;
 use App\Http\Requests\UpdateServicioRequest;
 use App\Services\ServicioService;
@@ -57,6 +58,21 @@ class ServicioController extends Controller
 
         return response()->json([
             'message' => 'Servicio eliminado correctamente',
+        ]);
+    }
+
+    public function buscar(BuscarServiciosRequest $request)
+    {
+        $paginator = $this->servicioService->buscar($request->validated());
+
+        return response()->json([
+            'message' => 'Servicios filtrados correctamente',
+            'data'    => $paginator->items(),
+            'meta'    => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+            ],
         ]);
     }
 }
