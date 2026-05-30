@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Horario;
 use App\Models\Pago;
+use App\Models\PaqueteComprado;
 use App\Models\Reserva;
 use App\Models\Resena;
 use App\Models\Profesional;
@@ -158,7 +159,7 @@ class ReservaService
         });
     }
 
-    public function cancelar(int $id): Reserva
+    public function cancelar(int $id): array
     {
         $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
 
@@ -169,11 +170,36 @@ class ReservaService
             default      => null,
         };
 
+        if ($reserva->idPaqueteComprado === null) {
+            return DB::transaction(function () use ($reserva) {
+                $reserva->estado = 'cancelada';
+                $reserva->save();
+
+                return [
+                    'reserva' => $reserva->fresh(self::WITH_RELATIONS),
+                ];
+            });
+        }
+
         return DB::transaction(function () use ($reserva) {
+            $paquete = PaqueteComprado::lockForUpdate()->findOrFail($reserva->idPaqueteComprado);
+
             $reserva->estado = 'cancelada';
             $reserva->save();
 
-            return $reserva->fresh(self::WITH_RELATIONS);
+            $paquete->sesionesUsadas    = max(0, $paquete->sesionesUsadas - 1);
+            $paquete->sesionesRestantes = min($paquete->totalSesiones, $paquete->sesionesRestantes + 1);
+
+            if ($paquete->estado === 'agotado') {
+                $paquete->estado = 'activo';
+            }
+
+            $paquete->save();
+
+            return [
+                'reserva'         => $reserva->fresh(self::WITH_RELATIONS),
+                'paqueteComprado' => $paquete->fresh(),
+            ];
         });
     }
 
