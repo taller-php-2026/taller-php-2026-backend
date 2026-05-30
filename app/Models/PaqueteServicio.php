@@ -23,4 +23,9 @@ class PaqueteServicio extends Model
     {
         return $this->belongsTo(Servicio::class, 'idServicio', 'idServicio');
     }
+
+    public function paquetesComprados()
+    {
+        return $this->hasMany(PaqueteComprado::class, 'idPaqueteServicio', 'idPaqueteServicio');
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Reserva;
+use App\Models\PaqueteComprado;
 
 class Pago extends Model
 {
@@ -20,5 +21,10 @@ class Pago extends Model
     public function reserva()
     {
         return $this->hasOne(Reserva::class, 'idPago', 'idPago');
+    }
+
+    public function paqueteComprado()
+    {
+        return $this->hasOne(PaqueteComprado::class, 'idPago', 'idPago');
     }
 }
