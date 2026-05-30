@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PaqueteCompradoService
 {
+    public function __construct(private NotificacionService $notificacionService) {}
+
     private const WITH_RELATIONS = [
         'paqueteServicio.servicio',
         'pago',
@@ -66,8 +68,20 @@ class PaqueteCompradoService
             $paqueteComprado->estado = 'activo';
             $paqueteComprado->save();
 
+            $fresh = $paqueteComprado->fresh(self::WITH_RELATIONS);
+
+            $servicio = $fresh->paqueteServicio->servicio->nombre ?? 'No especificado';
+
+            $this->notificacionService->notificar(
+                $fresh->idCliente,
+                $fresh->cliente->usuario->email,
+                'Paquete activado',
+                "Tu paquete fue activado correctamente.\n\nServicio: {$servicio}\nSesiones totales: {$fresh->totalSesiones}\nSesiones restantes: {$fresh->sesionesRestantes}\nPrecio pagado: \${$fresh->precioCompra}",
+                'confirmacion'
+            );
+
             return [
-                'paqueteComprado' => $paqueteComprado->fresh(self::WITH_RELATIONS),
+                'paqueteComprado' => $fresh,
                 'pago'            => $pago,
             ];
         });

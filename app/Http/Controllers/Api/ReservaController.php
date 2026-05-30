@@ -8,11 +8,16 @@ use App\Http\Requests\ReprogramarReservaRequest;
 use App\Http\Requests\StoreResenaRequest;
 use App\Http\Requests\StoreReservaRequest;
 use App\Http\Requests\UpdateReservaRequest;
+use App\Http\Requests\VideoTokenRequest;
+use App\Services\LiveKitService;
 use App\Services\ReservaService;
 
 class ReservaController extends Controller
 {
-    public function __construct(private ReservaService $reservaService) {}
+    public function __construct(
+        private ReservaService $reservaService,
+        private LiveKitService $liveKitService,
+    ) {}
 
     public function index()
     {
@@ -120,6 +125,21 @@ class ReservaController extends Controller
         return response()->json([
             'message' => 'Reservas vencidas canceladas correctamente',
             'data'    => $result,
+        ]);
+    }
+
+    public function videoToken(VideoTokenRequest $request, $id)
+    {
+        $idUsuario = (int) $request->user()->idUsuario;
+
+        $data = $this->liveKitService->generarTokenParaReserva(
+            (int) $id,
+            $idUsuario
+        );
+
+        return response()->json([
+            'message' => 'Token de videollamada generado correctamente',
+            'data'    => $data,
         ]);
     }
 }
