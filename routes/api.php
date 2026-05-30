@@ -30,6 +30,7 @@ Route::apiResource('profesionales', ProfesionalController::class);
 Route::get('profesionales/{id}/disponibilidad', [DisponibilidadController::class, 'porProfesional']);
 Route::post('profesionales/{id}/reservar-slot', [ReservaSlotController::class, 'reservar']);
 Route::apiResource('reservas', ReservaController::class);
+Route::post('reservas/cancelar-vencidas', [ReservaController::class, 'cancelarVencidas']);
 Route::post('reservas/{id}/pagar', [ReservaController::class, 'pagar']);
 Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
 Route::post('reservas/{id}/reprogramar', [ReservaController::class, 'reprogramar']);

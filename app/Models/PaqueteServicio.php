@@ -12,9 +12,13 @@ class PaqueteServicio extends Model
         'idServicio',
         'totalSesiones',
         'precio',
-        'activo'
+        'activo',
     ];
-    
+
+    protected $casts = [
+        'activo' => 'boolean',
+    ];
+
     public function servicio()
     {
         return $this->belongsTo(Servicio::class, 'idServicio', 'idServicio');

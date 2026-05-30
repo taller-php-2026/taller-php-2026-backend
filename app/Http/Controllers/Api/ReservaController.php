@@ -112,5 +112,15 @@ class ReservaController extends Controller
             'data'    => $result,
         ], 201);
     }
+
+    public function cancelarVencidas()
+    {
+        $result = $this->reservaService->cancelarVencidas();
+
+        return response()->json([
+            'message' => 'Reservas vencidas canceladas correctamente',
+            'data'    => $result,
+        ]);
+    }
 }
 
