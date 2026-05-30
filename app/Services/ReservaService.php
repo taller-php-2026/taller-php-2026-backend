@@ -152,10 +152,16 @@ class ReservaService
                 'fechaReserva' => "{$fecha} {$horaInicio}:00",
             ]);
 
-            return [
+            $result = [
                 'reserva' => $reserva->fresh(self::WITH_RELATIONS),
                 'horario' => $nuevoHorario,
             ];
+
+            if ($reserva->idPaqueteComprado !== null) {
+                $result['paqueteComprado'] = PaqueteComprado::find($reserva->idPaqueteComprado);
+            }
+
+            return $result;
         });
     }
 
