@@ -75,11 +75,11 @@ class ReservaController extends Controller
 
     public function cancelar($id)
     {
-        $reserva = $this->reservaService->cancelar((int) $id);
+        $data = $this->reservaService->cancelar((int) $id);
 
         return response()->json([
             'message' => 'Reserva cancelada correctamente',
-            'data'    => $reserva,
+            'data'    => $data,
         ]);
     }
 
