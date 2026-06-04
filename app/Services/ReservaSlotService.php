@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\ReservaActualizada;
 use App\Models\Horario;
 use App\Models\PaqueteComprado;
 use App\Models\Profesional;
@@ -47,16 +48,24 @@ class ReservaSlotService
         $horaFin = $slot['horaFin'];
 
         if ($idPaqueteComprado !== null) {
-            return $this->reservarConPaquete(
+            $result = $this->reservarConPaquete(
                 $idProfesional, $idCliente, $idServicio,
                 $fecha, $horaInicio, $horaFin, $idPaqueteComprado
             );
+        } else {
+            $result = $this->reservarNormal(
+                $idProfesional, $idCliente, $idServicio,
+                $fecha, $horaInicio, $horaFin
+            );
         }
 
-        return $this->reservarNormal(
-            $idProfesional, $idCliente, $idServicio,
-            $fecha, $horaInicio, $horaFin
-        );
+        if (! $result['reserva']->relationLoaded('horario')) {
+            $result['reserva']->load('horario');
+        }
+
+        broadcast(new ReservaActualizada($result['reserva'], 'creada'));
+
+        return $result;
     }
 
     private function reservarNormal(
