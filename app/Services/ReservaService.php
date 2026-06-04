@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\ReservaActualizada;
 use App\Models\Horario;
 use App\Models\Pago;
 use App\Models\PaqueteComprado;
@@ -143,7 +144,7 @@ class ReservaService
 
         $horaFin = $slot['horaFin'];
 
-        return DB::transaction(function () use ($reserva, $fecha, $horaInicio, $horaFin) {
+        $result = DB::transaction(function () use ($reserva, $fecha, $horaInicio, $horaFin) {
             $nuevoHorario = Horario::create([
                 'fecha'      => $fecha,
                 'horaInicio' => $horaInicio,
@@ -178,6 +179,10 @@ class ReservaService
 
             return $result;
         });
+
+        broadcast(new ReservaActualizada($result['reserva'], 'reprogramada'));
+
+        return $result;
     }
 
     public function cancelar(int $id): array
@@ -192,7 +197,7 @@ class ReservaService
         };
 
         if ($reserva->idPaqueteComprado === null) {
-            return DB::transaction(function () use ($reserva) {
+            $result = DB::transaction(function () use ($reserva) {
                 $reserva->estado = 'cancelada';
                 $reserva->save();
 
@@ -213,9 +218,13 @@ class ReservaService
                     'reserva' => $reserva->fresh(self::WITH_RELATIONS),
                 ];
             });
+
+            broadcast(new ReservaActualizada($result['reserva'], 'cancelada'));
+
+            return $result;
         }
 
-        return DB::transaction(function () use ($reserva) {
+        $result = DB::transaction(function () use ($reserva) {
             $paquete = PaqueteComprado::lockForUpdate()->findOrFail($reserva->idPaqueteComprado);
 
             $reserva->estado = 'cancelada';
@@ -248,6 +257,10 @@ class ReservaService
                 'paqueteComprado' => $paquete->fresh(),
             ];
         });
+
+        broadcast(new ReservaActualizada($result['reserva'], 'cancelada'));
+
+        return $result;
     }
 
     public function completar(int $id): Reserva
@@ -261,12 +274,16 @@ class ReservaService
             default      => null,
         };
 
-        return DB::transaction(function () use ($reserva) {
+        $reserva = DB::transaction(function () use ($reserva) {
             $reserva->estado = 'completada';
             $reserva->save();
 
             return $reserva->fresh(self::WITH_RELATIONS);
         });
+
+        broadcast(new ReservaActualizada($reserva, 'completada'));
+
+        return $reserva;
     }
 
     public function cancelarVencidas(): array
