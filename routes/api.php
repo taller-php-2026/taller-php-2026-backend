@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\RangoHorarioController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\ReservaSlotController;
+use App\Http\Controllers\Api\MercadoPagoController;
 
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);
@@ -57,6 +58,13 @@ Route::apiResource('paquete-servicios', PaqueteServicioController::class);
 Route::apiResource('ciclos', CicloController::class);
 Route::apiResource('rangos-horarios', RangoHorarioController::class);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Rutas Mercado Pago
+Route::post('reservas/{id}/mercadopago', [MercadoPagoController::class, 'crearPreferenciaReserva']);
+Route::post('paquetes-comprados/{id}/mercadopago', [MercadoPagoController::class, 'crearPreferenciaPaquete']);
+Route::post('mercadopago/webhook', [MercadoPagoController::class, 'webhook']);
+Route::get('mercadopago/pago/{paymentId}', [MercadoPagoController::class, 'consultarPago']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);

@@ -56,29 +56,41 @@ class PaqueteCompradoService
         }
 
         return DB::transaction(function () use ($paqueteComprado, $data) {
+            // Aceptar estados 'aprobado' o 'pendiente' (para Mercado Pago)
+            $estadoPago = $data['estado'] ?? 'aprobado';
+            if (!in_array($estadoPago, ['aprobado', 'pendiente'])) {
+                $estadoPago = 'aprobado';
+            }
+
             $pago = Pago::create([
                 'monto'             => $paqueteComprado->precioCompra,
                 'metodoPago'        => $data['metodoPago'],
-                'estado'            => 'aprobado',
+                'estado'            => $estadoPago,
                 'fechaPago'         => now(),
                 'referenciaExterna' => $data['referenciaExterna'] ?? null,
             ]);
 
             $paqueteComprado->idPago = $pago->idPago;
-            $paqueteComprado->estado = 'activo';
+            
+            // Solo activar si estado es aprobado
+            if ($estadoPago === 'aprobado') {
+                $paqueteComprado->estado = 'activo';
+                
+                $fresh = $paqueteComprado->fresh(self::WITH_RELATIONS);
+                $servicio = $fresh->paqueteServicio->servicio->nombre ?? 'No especificado';
+
+                $this->notificacionService->notificar(
+                    $fresh->idCliente,
+                    $fresh->cliente->usuario->email,
+                    'Paquete activado',
+                    "Tu paquete fue activado correctamente.\n\nServicio: {$servicio}\nSesiones totales: {$fresh->totalSesiones}\nSesiones restantes: {$fresh->sesionesRestantes}\nPrecio pagado: \${$fresh->precioCompra}",
+                    'confirmacion'
+                );
+            }
+            
             $paqueteComprado->save();
 
             $fresh = $paqueteComprado->fresh(self::WITH_RELATIONS);
-
-            $servicio = $fresh->paqueteServicio->servicio->nombre ?? 'No especificado';
-
-            $this->notificacionService->notificar(
-                $fresh->idCliente,
-                $fresh->cliente->usuario->email,
-                'Paquete activado',
-                "Tu paquete fue activado correctamente.\n\nServicio: {$servicio}\nSesiones totales: {$fresh->totalSesiones}\nSesiones restantes: {$fresh->sesionesRestantes}\nPrecio pagado: \${$fresh->precioCompra}",
-                'confirmacion'
-            );
 
             return [
                 'paqueteComprado' => $fresh,

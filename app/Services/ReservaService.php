@@ -86,9 +86,15 @@ class ReservaService
         }
 
         return DB::transaction(function () use ($reserva, $pago, $data) {
+            // Aceptar estados 'aprobado' o 'pendiente' (para Mercado Pago)
+            $estadoPago = $data['estado'] ?? 'aprobado';
+            if (!in_array($estadoPago, ['aprobado', 'pendiente'])) {
+                $estadoPago = 'aprobado';
+            }
+
             $datosPago = [
                 'metodoPago'        => $data['metodoPago'],
-                'estado'            => 'aprobado',
+                'estado'            => $estadoPago,
                 'fechaPago'         => now(),
                 'referenciaExterna' => $data['referenciaExterna'] ?? null,
             ];
@@ -103,7 +109,10 @@ class ReservaService
                 $reserva->idPago = $pago->idPago;
             }
 
-            $reserva->estado = 'confirmada';
+            // Solo confirmar si estado es aprobado
+            if ($estadoPago === 'aprobado') {
+                $reserva->estado = 'confirmada';
+            }
             $reserva->save();
 
             return $reserva->fresh(self::WITH_RELATIONS);

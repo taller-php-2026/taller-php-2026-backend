@@ -20,12 +20,12 @@ class NotificacionController extends Controller
         return response()->json($notificacion, 201);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         return Notificacion::findOrFail($id);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $notificacion = Notificacion::findOrFail($id);
 
@@ -34,7 +34,7 @@ class NotificacionController extends Controller
         return response()->json($notificacion, 200);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         Notificacion::destroy($id);
 
