@@ -46,8 +46,8 @@ class ServicioService
             $texto = $filtros['texto'];
             $query->where(function ($q) use ($texto) {
                 $q->where('servicios.nombre', 'ILIKE', "%{$texto}%")
-                  ->orWhere('servicios.descripcion', 'ILIKE', "%{$texto}%")
-                  ->orWhere('profesionales.nombreNegocio', 'ILIKE', "%{$texto}%");
+                    ->orWhere('servicios.descripcion', 'ILIKE', "%{$texto}%")
+                    ->orWhere('profesionales.nombreNegocio', 'ILIKE', "%{$texto}%");
             });
         }
 
@@ -110,5 +110,9 @@ class ServicioService
 
         return $paginator;
     }
-}
 
+    public function getProfesionalesByServicioId(int $id): Collection
+    {
+        return Servicio::findOrFail($id)->profesionales()->get();
+    }
+}

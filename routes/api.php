@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\MercadoPagoController;
 
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);
+Route::get('servicios/{id}/profesionales', [ServicioController::class, 'profesionales']);
 Route::get('profesionales/{id}/disponibilidad', [DisponibilidadController::class, 'porProfesional']);
 Route::post('profesionales/{id}/reservar-slot', [ReservaSlotController::class, 'reservar']);
 Route::apiResource('reservas', ReservaController::class);

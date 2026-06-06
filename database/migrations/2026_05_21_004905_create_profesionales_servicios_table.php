@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('profesionales_servicios', function (Blueprint $table) {
             $table->id("idProfesionalServicio");
-            $table->unsignedBigInteger('idProfesional')->unique(); 
+            $table->unsignedBigInteger('idProfesional');
             $table->foreign('idProfesional')->references('idUsuario')->on('profesionales')->onDelete('cascade');
-            $table->unsignedBigInteger('idServicio')->unique(); 
+            $table->unsignedBigInteger('idServicio');
             $table->foreign('idServicio')->references('idServicio')->on('servicios')->onDelete('cascade');
+            $table->unique(['idProfesional', 'idServicio']);
             $table->timestamps();
         });
-    } 
+    }
     /**
      * Reverse the migrations.
      */
