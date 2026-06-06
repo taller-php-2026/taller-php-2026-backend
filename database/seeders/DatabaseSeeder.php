@@ -170,5 +170,14 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ]));
         }
+
+        DB::table('profesionales_servicios')->insert([
+            ['idProfesional' => $idProf1, 'idServicio' => 1],
+            ['idProfesional' => $idProf1, 'idServicio' => 4],
+            ['idProfesional' => $idProf2, 'idServicio' => 2],
+            ['idProfesional' => $idProf2, 'idServicio' => 5],
+            ['idProfesional' => $idProf3, 'idServicio' => 3],
+            ['idProfesional' => $idProf2, 'idServicio' => 3],
+        ]);
     }
 }

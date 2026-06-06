@@ -75,5 +75,14 @@ class ServicioController extends Controller
             ],
         ]);
     }
-}
 
+    // obtener profesionales que ofrecen un servicio específico
+    public function profesionales($id)
+    {
+        $profesionales = $this->servicioService->getProfesionalesByServicioId((int) $id);
+
+        return response()->json([
+            'data' => $profesionales,
+        ]);
+    }
+}
