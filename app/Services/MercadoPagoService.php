@@ -43,22 +43,10 @@ class MercadoPagoService
         if ($reserva->pago && $reserva->pago->estado === 'aprobado') {
             abort(409, 'La reserva ya está pagada.');
         }
-        //$frontend = env('FRONTEND_URL');
-        $url_success = "http://localhost:3000/reservas/{$idReserva}/confirmacion";
-        $url_failure = "http://localhost:3000/reservas/{$idReserva}/error";
-        $url_pending = "http://localhost:3000/reservas/{$idReserva}/pendiente";
-                Log::info('BACK URLS DEBUG', [
-            'success' => $url_success,
-            'failure' => $url_failure,
-            'pending' => $url_pending,
-        ]);
-        /*
-        $frontend = rtrim(config('app.frontend_url'), '/');
-
-        $url_success = $urlRetorno ?? $frontend . "/reservas/{$idReserva}/confirmacion";
+        $frontend = rtrim(env('FRONTEND_URL'), '/');
+        $url_success = $frontend . "/reservas/{$idReserva}/confirmacion";
         $url_failure = $frontend . "/reservas/{$idReserva}/error";
         $url_pending = $frontend . "/reservas/{$idReserva}/pendiente";
-*/
         try {
             $preference = $this->preferenceClient->create([
                 'items' => [[
@@ -78,8 +66,9 @@ class MercadoPagoService
                     'success' => $url_success,
                     'failure' => $url_failure,
                     'pending' => $url_pending,
-                    'auto_return' => 'approved',
                 ],
+
+                'auto_return' => 'approved',
 
                 
                 'external_reference' => "reserva_{$idReserva}",
@@ -178,7 +167,12 @@ class MercadoPagoService
 
         try {
             $payment = $this->paymentClient->get($paymentId);
-
+            Log::info('ESTADO DEL PAGO', [
+                'id' => $payment->id,
+                'status' => $payment->status,
+                'status_detail' => $payment->status_detail,
+                'external_reference' => $payment->external_reference,
+            ]);
             $ref = $payment->external_reference ?? null;
 
             if (!$ref) {
@@ -222,9 +216,8 @@ class MercadoPagoService
                 'cancelled' => 'cancelado',
                 default => 'pendiente',
             };
-
             $pago = Pago::updateOrCreate(
-                ['id' => $reserva->idPago],
+                ['idPago' => $reserva->idPago],
                 [
                     'monto' => $payment->transaction_amount,
                     'metodoPago' => 'mercadopago',
@@ -280,7 +273,7 @@ class MercadoPagoService
             };
 
             $pago = Pago::updateOrCreate(
-                ['id' => $paquete->idPago],
+                ['idPago' => $paquete->idPago],
                 [
                     'monto' => $payment->transaction_amount,
                     'metodoPago' => 'mercadopago',
@@ -304,8 +297,14 @@ class MercadoPagoService
     public function consultarPago(string $paymentId): array
     {
         try {
+            
             $payment = $this->paymentClient->get((int) $paymentId);
-
+            Log::info('ESTADO ACTUAL DEL PAGO', [
+                'id' => $payment->id,
+                'status' => $payment->status,
+                'status_detail' => $payment->status_detail,
+                'external_reference' => $payment->external_reference,
+            ]);
             return [
                 'payment_id' => $payment->id,
                 'status' => $payment->status,

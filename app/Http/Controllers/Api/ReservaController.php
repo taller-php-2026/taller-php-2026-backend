@@ -38,7 +38,7 @@ class ReservaController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         $reserva = $this->reservaService->getById((int) $id);
 
@@ -47,7 +47,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function update(UpdateReservaRequest $request, $id)
+    public function update(UpdateReservaRequest $request, int $id)
     {
         $reserva = $this->reservaService->getById((int) $id);
         $reserva = $this->reservaService->update($reserva, $request->validated());
@@ -58,7 +58,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $reserva = $this->reservaService->getById((int) $id);
         $this->reservaService->delete($reserva);
@@ -68,7 +68,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function reprogramar(ReprogramarReservaRequest $request, $id)
+    public function reprogramar(ReprogramarReservaRequest $request, int $id)
     {
         $data = $this->reservaService->reprogramar((int) $id, $request->validated());
 
@@ -78,7 +78,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function cancelar($id)
+    public function cancelar(int $id)
     {
         $data = $this->reservaService->cancelar((int) $id);
 
@@ -88,7 +88,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function pagar(PagarReservaRequest $request, $id)
+    public function pagar(PagarReservaRequest $request, int $id)
     {
         $reserva = $this->reservaService->pagar((int) $id, $request->validated());
 
@@ -98,7 +98,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function completar($id)
+    public function completar(int $id)
     {
         $reserva = $this->reservaService->completar((int) $id);
 
@@ -108,7 +108,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function resena(StoreResenaRequest $request, $id)
+    public function resena(StoreResenaRequest $request, int $id)
     {
         $result = $this->reservaService->resena((int) $id, $request->validated());
 
@@ -128,7 +128,7 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function videoToken(VideoTokenRequest $request, $id)
+    public function videoToken(VideoTokenRequest $request, int $id)
     {
         $idUsuario = (int) $request->user()->idUsuario;
 
