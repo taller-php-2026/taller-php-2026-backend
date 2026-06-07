@@ -179,5 +179,42 @@ class DatabaseSeeder extends Seeder
             ['idProfesional' => $idProf3, 'idServicio' => 3],
             ['idProfesional' => $idProf2, 'idServicio' => 3],
         ]);
+
+        // ─── CICLOS ───────────────────────────────────────────────────────────
+        $ciclo1 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana estándar', 'created_at' => now(), 'updated_at' => now()]);
+        $ciclo2 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana reducida', 'created_at' => now(), 'updated_at' => now()]);
+
+        // ─── RANGO HORARIOS ───────────────────────────────────────────────────
+        $rangos = [
+            ['idCiclo' => $ciclo1, 'diaSemana' => 'Lunes',    'horaInicio' => '09:00', 'horaFin' => '17:00'],
+            ['idCiclo' => $ciclo1, 'diaSemana' => 'Martes',   'horaInicio' => '09:00', 'horaFin' => '17:00'],
+            ['idCiclo' => $ciclo1, 'diaSemana' => 'Miércoles', 'horaInicio' => '09:00', 'horaFin' => '17:00'],
+            ['idCiclo' => $ciclo1, 'diaSemana' => 'Jueves',   'horaInicio' => '09:00', 'horaFin' => '17:00'],
+            ['idCiclo' => $ciclo1, 'diaSemana' => 'Viernes',  'horaInicio' => '09:00', 'horaFin' => '13:00'],
+            ['idCiclo' => $ciclo2, 'diaSemana' => 'Lunes',    'horaInicio' => '10:00', 'horaFin' => '14:00'],
+            ['idCiclo' => $ciclo2, 'diaSemana' => 'Miércoles', 'horaInicio' => '10:00', 'horaFin' => '14:00'],
+        ];
+        foreach ($rangos as $r) {
+            DB::table('rango_horarios')->insert(array_merge($r, ['created_at' => now(), 'updated_at' => now()]));
+        }
+
+        // ─── AGENDAS ──────────────────────────────────────────────────────────
+        $agenda1 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()]);
+        $agenda2 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()]);
+        $agenda3 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo2, 'created_at' => now(), 'updated_at' => now()]);
+
+        // ─── REGLAS DISPONIBILIDAD ────────────────────────────────────────────
+        $reglas = [
+            ['idProfesional' => $idProf1, 'idAgenda' => $agenda1, 'dia_semana' => 'Lunes',    'horaInicio' => '09:00', 'horaFin' => '17:00', 'pausaMinutos' => 15, 'bufferMinutos' => 10, 'activa' => 1],
+            ['idProfesional' => $idProf1, 'idAgenda' => $agenda1, 'dia_semana' => 'Martes',   'horaInicio' => '09:00', 'horaFin' => '17:00', 'pausaMinutos' => 15, 'bufferMinutos' => 10, 'activa' => 1],
+            ['idProfesional' => $idProf1, 'idAgenda' => $agenda1, 'dia_semana' => 'Miércoles', 'horaInicio' => '09:00', 'horaFin' => '17:00', 'pausaMinutos' => 15, 'bufferMinutos' => 10, 'activa' => 1],
+            ['idProfesional' => $idProf2, 'idAgenda' => $agenda2, 'dia_semana' => 'Lunes',    'horaInicio' => '10:00', 'horaFin' => '18:00', 'pausaMinutos' => 20, 'bufferMinutos' => 5,  'activa' => 1],
+            ['idProfesional' => $idProf2, 'idAgenda' => $agenda2, 'dia_semana' => 'Jueves',   'horaInicio' => '10:00', 'horaFin' => '18:00', 'pausaMinutos' => 20, 'bufferMinutos' => 5,  'activa' => 1],
+            ['idProfesional' => $idProf3, 'idAgenda' => $agenda3, 'dia_semana' => 'Miércoles', 'horaInicio' => '08:00', 'horaFin' => '14:00', 'pausaMinutos' => 10, 'bufferMinutos' => 0,  'activa' => 1],
+            ['idProfesional' => $idProf3, 'idAgenda' => $agenda3, 'dia_semana' => 'Viernes',  'horaInicio' => '08:00', 'horaFin' => '14:00', 'pausaMinutos' => 10, 'bufferMinutos' => 0,  'activa' => 1],
+        ];
+        foreach ($reglas as $r) {
+            DB::table('reglas_disponibilidad')->insert(array_merge($r, ['created_at' => now(), 'updated_at' => now()]));
+        }
     }
 }
