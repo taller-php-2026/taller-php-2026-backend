@@ -6,11 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BuscarServiciosRequest;
 use App\Http\Requests\StoreServicioRequest;
 use App\Http\Requests\UpdateServicioRequest;
+use App\Services\CloudinaryService;
 use App\Services\ServicioService;
+use Illuminate\Http\Request;
 
 class ServicioController extends Controller
 {
-    public function __construct(private ServicioService $servicioService) {}
+    public function __construct(
+        private ServicioService $servicioService,
+        private CloudinaryService $cloudinaryService,
+    ) {}
 
     public function index()
     {
@@ -83,6 +88,29 @@ class ServicioController extends Controller
 
         return response()->json([
             'data' => $profesionales,
+        ]);
+    }
+
+    public function subirImagen(Request $request, $id)
+    {
+        $request->validate([
+            'imagen' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $servicio = $this->servicioService->getById((int) $id);
+
+        $this->cloudinaryService->eliminarImagen($servicio->imagenPublicId);
+
+        $resultado = $this->cloudinaryService->subirImagen($request->file('imagen'), 'taller-php/servicios');
+
+        $servicio->update([
+            'imagenUrl'      => $resultado['url'],
+            'imagenPublicId' => $resultado['public_id'],
+        ]);
+
+        return response()->json([
+            'message' => 'Imagen del servicio subida correctamente',
+            'data'    => $servicio,
         ]);
     }
 }

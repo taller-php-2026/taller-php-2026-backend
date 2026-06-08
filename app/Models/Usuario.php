@@ -16,7 +16,9 @@ class Usuario extends Authenticatable
         'email',
         'password',
         'telefono',
-        'activo'
+        'activo',
+        'imagenPerfilUrl',
+        'imagenPerfilPublicId',
     ];
 
     protected $hidden = ['password'];

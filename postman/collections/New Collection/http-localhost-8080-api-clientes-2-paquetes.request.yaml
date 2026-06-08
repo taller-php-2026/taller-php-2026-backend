@@ -1,0 +1,5 @@
+$kind: http-request
+name: http://localhost:8080/api/clientes/2/paquetes
+url: http://localhost:8080/api/clientes/2/paquetes
+method: GET
+order: 1780863944349
