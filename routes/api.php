@@ -32,7 +32,7 @@ use App\Http\Controllers\Api\ProfesionalMetricasController;
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);
 Route::get('profesionales/{id}/disponibilidad', [DisponibilidadController::class, 'porProfesional']);
-Route::post('profesionales/{id}/reservar-slot', [ReservaSlotController::class, 'reservar']);
+Route::post('profesionales/{id}/reservar-slot', [ReservaSlotController::class, 'reservar'])->middleware('auth:sanctum');
 Route::apiResource('reservas', ReservaController::class);
 Route::post('reservas/cancelar-vencidas', [ReservaController::class, 'cancelarVencidas']);
 Route::post('reservas/{id}/pagar', [ReservaController::class, 'pagar']);
@@ -40,7 +40,12 @@ Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
 Route::post('reservas/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
 Route::post('reservas/{id}/completar', [ReservaController::class, 'completar']);
 Route::post('reservas/{id}/resena', [ReservaController::class, 'resena']);
+
+// Mercado Pago — webhook público (MP lo llama desde sus servidores)
+Route::post('mercadopago/webhook', [MercadoPagoController::class, 'webhook']);
+Route::get('mercadopago/pago/{paymentId}', [MercadoPagoController::class, 'consultarPago']);
 Route::get('servicios/buscar', [ServicioController::class, 'buscar']);
+Route::get('servicios/{id}/profesionales', [ServicioController::class, 'profesionales']);
 Route::post('servicios/{id}/imagen', [ServicioController::class, 'subirImagen']);
 Route::apiResource('servicios', ServicioController::class);
 Route::apiResource('servicio-comun', ServicioComunController::class);
@@ -71,6 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/auth/completar-perfil', [AuthController::class, 'completarPerfil']);
     Route::post('reservas/{id}/video-token', [ReservaController::class, 'videoToken']);
+
+    // Mercado Pago — requieren usuario autenticado
+    Route::post('reservas/{id}/mercadopago',           [MercadoPagoController::class, 'crearPreferenciaReserva']);
+    Route::post('paquetes-comprados/{id}/mercadopago', [MercadoPagoController::class, 'crearPreferenciaPaquete']);
 
     Route::prefix('admin')->group(function () {
         Route::get('metricas',               [AdminController::class, 'metricas']);
