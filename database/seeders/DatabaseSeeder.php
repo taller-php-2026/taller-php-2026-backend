@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
                 'fechaRegistro' => now(),
                 'created_at'    => now(),
                 'updated_at'    => now(),
-            ]));
+            ]), 'idUsuario');
             $usuarioIds[] = $id;
         }
 
@@ -125,7 +125,7 @@ class DatabaseSeeder extends Seeder
             $horarioIds[] = DB::table('horarios')->insertGetId(array_merge($h, [
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]));
+            ]), 'idHorario');
         }
 
         // ─── 8. RESERVAS ──────────────────────────────────────────────────
@@ -181,9 +181,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ─── CICLOS ───────────────────────────────────────────────────────────
-        $ciclo1 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana estándar', 'created_at' => now(), 'updated_at' => now()]);
-        $ciclo2 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana reducida', 'created_at' => now(), 'updated_at' => now()]);
-
+        $ciclo1 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana estándar', 'created_at' => now(), 'updated_at' => now()], 'idCiclo');
+        $ciclo2 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana reducida', 'created_at' => now(), 'updated_at' => now()], 'idCiclo');
         // ─── RANGO HORARIOS ───────────────────────────────────────────────────
         $rangos = [
             ['idCiclo' => $ciclo1, 'diaSemana' => 'Lunes',    'horaInicio' => '09:00', 'horaFin' => '17:00'],
@@ -199,10 +198,9 @@ class DatabaseSeeder extends Seeder
         }
 
         // ─── AGENDAS ──────────────────────────────────────────────────────────
-        $agenda1 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()]);
-        $agenda2 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()]);
-        $agenda3 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo2, 'created_at' => now(), 'updated_at' => now()]);
-
+        $agenda1 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()], 'idAgenda');
+        $agenda2 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()], 'idAgenda');
+        $agenda3 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo2, 'created_at' => now(), 'updated_at' => now()], 'idAgenda');
         // ─── REGLAS DISPONIBILIDAD ────────────────────────────────────────────
         $reglas = [
             ['idProfesional' => $idProf1, 'idAgenda' => $agenda1, 'dia_semana' => 'Lunes',    'horaInicio' => '09:00', 'horaFin' => '17:00', 'pausaMinutos' => 15, 'bufferMinutos' => 10, 'activa' => 1],
