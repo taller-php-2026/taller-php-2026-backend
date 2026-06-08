@@ -86,6 +86,15 @@ class ReservaService
         }
 
         return DB::transaction(function () use ($reserva, $pago, $data) {
+            // Si el método es mercadopago y viene un token como referenciaExterna, procesamos con la API real de MP
+            if ($data['metodoPago'] === 'mercadopago' && !empty($data['referenciaExterna'])) {
+                // Invocamos al servicio de Mercado Pago para realizar el cobro real con el token
+                $email = optional($reserva->cliente?->usuario)->email ?? 'comprador_prueba@test.com';
+                app(MercadoPagoService::class)->cobrarConToken($reserva->idReserva, $data['referenciaExterna'], $email);
+                
+                return $reserva->fresh(self::WITH_RELATIONS);
+            }
+
             // Aceptar estados 'aprobado' o 'pendiente' (para Mercado Pago)
             $estadoPago = $data['estado'] ?? 'aprobado';
             if (!in_array($estadoPago, ['aprobado', 'pendiente'])) {

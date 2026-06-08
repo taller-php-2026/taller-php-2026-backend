@@ -26,6 +26,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\ReservaSlotController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\MercadoPagoController;
+use App\Http\Controllers\Api\ProfesionalMetricasController;
 
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);

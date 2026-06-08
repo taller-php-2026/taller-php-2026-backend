@@ -38,15 +38,18 @@ class DatabaseSeeder extends Seeder
 
         $usuarioIds = [];
         foreach ($usuariosData as $u) {
-            $id = DB::table('usuarios')->insertGetId(array_merge($u, [
-                'password'      => Hash::make('password123'),
-                'activo'        => 1,
-                'fechaRegistro' => now(),
-                'created_at'    => now(),
-                'updated_at'    => now(),
-            ]));
-            $usuarioIds[] = $id;
-        }
+    // Le pasamos 'idUsuario' como segundo parámetro para decirle a Postgres qué retornar
+    $id = DB::table('usuarios')->insertGetId(array_merge($u, [
+        'password'      => Hash::make('password123'),
+        'activo'        => 1,
+        'fechaRegistro' => now(),
+        'created_at'    => now(),
+        'updated_at'    => now(),
+    ]), 'idUsuario'); // <--- Acá está el truco
+    
+    $usuarioIds[] = $id;
+}
+        
 
         [
             $idCliente1,
@@ -65,6 +68,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+        
 
         // ─── 4. PROFESIONALES ─────────────────────────────────────────────
         $profData = [
@@ -121,11 +125,12 @@ class DatabaseSeeder extends Seeder
             ['fecha' => Carbon::now()->addDays(2)->toDateString(),  'horaInicio' => '11:00', 'horaFin' => '11:15'],
             ['fecha' => Carbon::now()->subDays(2)->toDateString(),  'horaInicio' => '15:00', 'horaFin' => '15:50'],
         ];
+        // Cambiá el insert de horarios pasándole 'idHorario' al final:
         foreach ($horariosData as $h) {
             $horarioIds[] = DB::table('horarios')->insertGetId(array_merge($h, [
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]));
+            ]), 'idHorario'); // <--- Clave primaria real
         }
 
         // ─── 8. RESERVAS ──────────────────────────────────────────────────
@@ -181,8 +186,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ─── CICLOS ───────────────────────────────────────────────────────────
-        $ciclo1 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana estándar', 'created_at' => now(), 'updated_at' => now()]);
-        $ciclo2 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana reducida', 'created_at' => now(), 'updated_at' => now()]);
+        $ciclo1 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana estándar', 'created_at' => now(), 'updated_at' => now()], 'idCiclo');
+        $ciclo2 = DB::table('ciclos')->insertGetId(['nombre' => 'Semana reducida', 'created_at' => now(), 'updated_at' => now()], 'idCiclo');
 
         // ─── RANGO HORARIOS ───────────────────────────────────────────────────
         $rangos = [
@@ -199,9 +204,9 @@ class DatabaseSeeder extends Seeder
         }
 
         // ─── AGENDAS ──────────────────────────────────────────────────────────
-        $agenda1 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()]);
-        $agenda2 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()]);
-        $agenda3 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo2, 'created_at' => now(), 'updated_at' => now()]);
+        $agenda1 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()], 'idAgenda');
+        $agenda2 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo1, 'created_at' => now(), 'updated_at' => now()], 'idAgenda');
+        $agenda3 = DB::table('agendas')->insertGetId(['idCiclo' => $ciclo2, 'created_at' => now(), 'updated_at' => now()], 'idAgenda');
 
         // ─── REGLAS DISPONIBILIDAD ────────────────────────────────────────────
         $reglas = [
