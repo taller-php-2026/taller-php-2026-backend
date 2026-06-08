@@ -16,7 +16,9 @@ class Servicio extends Model
         'activo',
         'modalidad',
         'idUbicacion',
-        'idVideoSesion'
+        'idVideoSesion',
+        'imagenUrl',
+        'imagenPublicId',
     ];
 
     public function profesional()

@@ -13,6 +13,8 @@ class PaqueteServicio extends Model
         'totalSesiones',
         'precio',
         'activo',
+        'imagenUrl',
+        'imagenPublicId',
     ];
 
     protected $casts = [
