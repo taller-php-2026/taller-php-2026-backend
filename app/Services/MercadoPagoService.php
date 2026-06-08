@@ -43,50 +43,99 @@ class MercadoPagoService
         if ($reserva->pago && $reserva->pago->estado === 'aprobado') {
             abort(409, 'La reserva ya está pagada.');
         }
-        $frontend = rtrim(env('FRONTEND_URL'), '/');
-        $url_success = $frontend . "/reservas/{$idReserva}/confirmacion";
-        $url_failure = $frontend . "/reservas/{$idReserva}/error";
-        $url_pending = $frontend . "/reservas/{$idReserva}/pendiente";
+
+        $frontendUrl     = rtrim(config('mercadopago.frontend_url'), '/');
+        $apiUrl          = rtrim(config('app.api_url'), '/');
+        $notificationUrl = $apiUrl . '/api/mercadopago/webhook';
+
+        $backUrls = [
+            'success' => $frontendUrl . '/reservas/' . $reserva->idReserva . '/confirmacion?status=approved',
+            'failure' => $frontendUrl . '/reservas/' . $reserva->idReserva . '/confirmacion?status=failure',
+            'pending' => $frontendUrl . '/reservas/' . $reserva->idReserva . '/confirmacion?status=pending',
+        ];
+
+        if (empty($backUrls['success'])) {
+            abort(500, 'FRONTEND_URL no está configurado. No se puede crear la preferencia de pago.');
+        }
+
+        $payload = [
+            'items' => [[
+                'id'          => "reserva_{$idReserva}",
+                'title'       => $reserva->servicio->nombre ?? 'Servicio',
+                'quantity'    => 1,
+                'currency_id' => 'UYU',
+                'unit_price'  => (float) $reserva->servicio->precio,
+            ]],
+            'payer' => [
+                'name'  => $reserva->cliente->usuario->nombre ?? 'Cliente',
+                'email' => $reserva->cliente->usuario->email ?? '',
+            ],
+            'back_urls'          => $backUrls,
+            'auto_return'        => 'approved',
+            'external_reference' => "reserva_{$idReserva}",
+            'notification_url'   => $notificationUrl,
+        ];
+
+        Log::info('MercadoPago preference payload', [
+            'idReserva'        => $reserva->idReserva,
+            'back_urls'        => $backUrls,
+            'notification_url' => $notificationUrl,
+            'frontend_url'     => $frontendUrl,
+            'api_url'          => $apiUrl,
+            'item_price'       => $payload['items'][0]['unit_price'],
+            'item_title'       => $payload['items'][0]['title'],
+            'payer_email'      => $payload['payer']['email'],
+            'access_token_set' => ! empty(config('mercadopago.access_token')),
+        ]);
+
         try {
-            $preference = $this->preferenceClient->create([
-                'items' => [[
-                    'id' => "reserva_{$idReserva}",
-                    'title' => $reserva->servicio->nombre ?? 'Servicio',
-                    'quantity' => 1,
-                    'currency_id' => 'UYU',
-                    'unit_price' => (float) $reserva->servicio->precio,
-                ]],
-
-                'payer' => [
-                    'name' => $reserva->cliente->usuario->nombre ?? 'Cliente',
-                    'email' => $reserva->cliente->usuario->email ?? '',
-                ],
-
-                'back_urls' => [
-                    'success' => $url_success,
-                    'failure' => $url_failure,
-                    'pending' => $url_pending,
-                ],
-
-                'auto_return' => 'approved',
-
-                
-                'external_reference' => "reserva_{$idReserva}",
-
-                'notification_url' => config('app.api_url') . '/api/mercadopago/webhook',
-            ]);
+            $preference = $this->preferenceClient->create($payload);
 
             return [
-                'checkout_url' => $preference->init_point,
+                'checkout_url'  => $preference->init_point,
                 'preference_id' => $preference->id,
             ];
         } catch (MPApiException $e) {
+            $apiResponse = method_exists($e, 'getApiResponse')
+                ? $e->getApiResponse()?->getContent()
+                : null;
+
             Log::error('MercadoPago error reserva', [
-                'message' => $e->getMessage(),
-                'response' => method_exists($e, 'getApiResponse')
-                    ? $e->getApiResponse()?->getContent()
-                    : null,
+                'idReserva'    => $idReserva,
+                'exception'    => get_class($e),
+                'message'      => $e->getMessage(),
+                'code'         => $e->getCode(),
+                'api_response' => $apiResponse,
+                'payload'      => $payload,
             ]);
+
+            if (config('app.debug')) {
+                abort(response()->json([
+                    'message'      => 'Error creando preferencia de pago',
+                    'error'        => $e->getMessage(),
+                    'api_response' => $apiResponse,
+                    'payload'      => $payload,
+                ], 500));
+            }
+
+            abort(500, 'Error creando preferencia de pago');
+        } catch (\Throwable $e) {
+            Log::error('MercadoPago excepción inesperada reserva', [
+                'idReserva' => $idReserva,
+                'exception' => get_class($e),
+                'message'   => $e->getMessage(),
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine(),
+            ]);
+
+            if (config('app.debug')) {
+                abort(response()->json([
+                    'message' => 'Error creando preferencia de pago',
+                    'error'   => $e->getMessage(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ], 500));
+            }
 
             abort(500, 'Error creando preferencia de pago');
         }
@@ -109,42 +158,96 @@ class MercadoPagoService
             abort(409, 'Este paquete ya fue pagado.');
         }
 
-        $url_success = $urlRetorno ?? config('app.frontend_url') . "/paquetes-comprados/{$idPaqueteComprado}/confirmacion";
-        $url_failure = config('app.frontend_url') . "/paquetes-comprados/{$idPaqueteComprado}/error";
-        $url_pending = config('app.frontend_url') . "/paquetes-comprados/{$idPaqueteComprado}/pendiente";
+        $frontendUrl     = rtrim(config('mercadopago.frontend_url'), '/');
+        $apiUrl          = rtrim(config('app.api_url'), '/');
+        $notificationUrl = $apiUrl . '/api/mercadopago/webhook';
+
+        $backUrls = [
+            'success' => $frontendUrl . '/paquetes-comprados/' . $idPaqueteComprado . '/confirmacion?status=approved',
+            'failure' => $frontendUrl . '/paquetes-comprados/' . $idPaqueteComprado . '/confirmacion?status=failure',
+            'pending' => $frontendUrl . '/paquetes-comprados/' . $idPaqueteComprado . '/confirmacion?status=pending',
+        ];
+
+        if (empty($backUrls['success'])) {
+            abort(500, 'FRONTEND_URL no está configurado. No se puede crear la preferencia de pago.');
+        }
+
+        $payload = [
+            'items' => [[
+                'id'          => "paquete_{$idPaqueteComprado}",
+                'title'       => ($paquete->paqueteServicio->servicio->nombre ?? 'Paquete') .
+                    " - {$paquete->totalSesiones} sesiones",
+                'quantity'    => 1,
+                'currency_id' => 'UYU',
+                'unit_price'  => (float) $paquete->precioCompra,
+            ]],
+            'payer' => [
+                'name'  => $paquete->cliente->usuario->nombre ?? 'Cliente',
+                'email' => $paquete->cliente->usuario->email ?? '',
+            ],
+            'back_urls'          => $backUrls,
+            'auto_return'        => 'approved',
+            'external_reference' => "paquete_{$idPaqueteComprado}",
+            'notification_url'   => $notificationUrl,
+        ];
+
+        Log::info('MercadoPago preference payload paquete', [
+            'idPaqueteComprado' => $idPaqueteComprado,
+            'back_urls'         => $backUrls,
+            'notification_url'  => $notificationUrl,
+            'frontend_url'      => $frontendUrl,
+            'api_url'           => $apiUrl,
+            'item_price'        => $payload['items'][0]['unit_price'],
+        ]);
 
         try {
-            $preference = $this->preferenceClient->create([
-                'items' => [[
-                    'id' => "paquete_{$idPaqueteComprado}",
-                    'title' => $paquete->paqueteServicio->servicio->nombre .
-                        " - {$paquete->totalSesiones} sesiones",
-                    'quantity' => 1,
-                    'currency_id' => 'UYU',
-                    'unit_price' => (float) $paquete->precioCompra,
-                ]],
-                'payer' => [
-                    'name' => $paquete->cliente->usuario->nombre ?? 'Cliente',
-                    'email' => $paquete->cliente->usuario->email ?? '',
-                ],
-                'back_urls' => [
-                    'success' => $url_success,
-                    'failure' => $url_failure,
-                    'pending' => $url_pending,
-                ],
-                'notification_url' => config('app.api_url') . '/api/mercadopago/webhook',
-                'auto_return' => 'approved',
-                'external_reference' => "paquete_{$idPaqueteComprado}",
-            ]);
+            $preference = $this->preferenceClient->create($payload);
 
             return [
-                'checkout_url' => $preference->init_point,
+                'checkout_url'  => $preference->init_point,
                 'preference_id' => $preference->id,
             ];
         } catch (MPApiException $e) {
+            $apiResponse = method_exists($e, 'getApiResponse')
+                ? $e->getApiResponse()?->getContent()
+                : null;
+
             Log::error('MercadoPago error paquete', [
-                'message' => $e->getMessage(),
+                'idPaqueteComprado' => $idPaqueteComprado,
+                'exception'         => get_class($e),
+                'message'           => $e->getMessage(),
+                'code'              => $e->getCode(),
+                'api_response'      => $apiResponse,
+                'payload'           => $payload,
             ]);
+
+            if (config('app.debug')) {
+                abort(response()->json([
+                    'message'      => 'Error creando preferencia de pago',
+                    'error'        => $e->getMessage(),
+                    'api_response' => $apiResponse,
+                    'payload'      => $payload,
+                ], 500));
+            }
+
+            abort(500, 'Error creando preferencia de pago');
+        } catch (\Throwable $e) {
+            Log::error('MercadoPago excepción inesperada paquete', [
+                'idPaqueteComprado' => $idPaqueteComprado,
+                'exception'         => get_class($e),
+                'message'           => $e->getMessage(),
+                'file'              => $e->getFile(),
+                'line'              => $e->getLine(),
+            ]);
+
+            if (config('app.debug')) {
+                abort(response()->json([
+                    'message' => 'Error creando preferencia de pago',
+                    'error'   => $e->getMessage(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ], 500));
+            }
 
             abort(500, 'Error creando preferencia de pago');
         }

@@ -12,7 +12,16 @@ class ReservaSlotController extends Controller
 
     public function reservar(ReservarSlotRequest $request, $id)
     {
-        $validated = $request->validated();
+        $user = $request->user();
+
+        if (! $user->cliente) {
+            return response()->json([
+                'message' => 'Solo los clientes pueden realizar reservas.',
+            ], 403);
+        }
+
+        $validated              = $request->validated();
+        $validated['idCliente'] = $user->idUsuario;
 
         $data = $this->service->reservar(
             (int) $id,

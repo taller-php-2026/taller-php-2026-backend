@@ -27,6 +27,25 @@ class ReservaSlotService
     ): array {
         Profesional::findOrFail($idProfesional);
 
+        $servicio = \App\Models\Servicio::findOrFail($idServicio);
+
+        if (! $servicio->activo) {
+            throw new HttpResponseException(
+                response()->json(['message' => 'El servicio seleccionado no está activo.'], 422)
+            );
+        }
+
+        $ofrecido = \Illuminate\Support\Facades\DB::table('profesionales_servicios')
+            ->where('idProfesional', $idProfesional)
+            ->where('idServicio', $idServicio)
+            ->exists();
+
+        if (! $ofrecido) {
+            throw new HttpResponseException(
+                response()->json(['message' => 'El profesional no ofrece el servicio indicado.'], 422)
+            );
+        }
+
         $disponibilidad = $this->disponibilidadService->getDisponibilidad(
             $idProfesional,
             $fecha,
@@ -39,7 +58,7 @@ class ReservaSlotService
         if (!$slot) {
             throw new HttpResponseException(
                 response()->json(
-                    ['message' => 'El slot solicitado no está disponible para reservar.'],
+                    ['message' => 'El horario seleccionado no está disponible.'],
                     409
                 )
             );
