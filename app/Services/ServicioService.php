@@ -113,6 +113,6 @@ class ServicioService
 
     public function getProfesionalesByServicioId(int $id): Collection
     {
-        return Servicio::findOrFail($id)->profesionales()->get();
+        return Servicio::findOrFail($id)->profesionales()->with('usuario')->get();
     }
 }
