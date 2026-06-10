@@ -7,21 +7,19 @@ use Illuminate\Http\UploadedFile;
 
 class CloudinaryService
 {
-    private Cloudinary $cloudinary;
+    private ?Cloudinary $cloudinary = null;
 
-    public function __construct()
+    private function getClient(): Cloudinary
     {
-        $this->cloudinary = new Cloudinary(config('services.cloudinary.url', env('CLOUDINARY_URL')));
+        if (!$this->cloudinary) {
+            $this->cloudinary = new Cloudinary(config('services.cloudinary.url', env('CLOUDINARY_URL')));
+        }
+        return $this->cloudinary;
     }
 
-    /**
-     * Sube una imagen a Cloudinary en la carpeta indicada.
-     *
-     * @return array{ url: string, public_id: string }
-     */
     public function subirImagen(UploadedFile $imagen, string $carpeta): array
     {
-        $result = $this->cloudinary->uploadApi()->upload($imagen->getRealPath(), [
+        $result = $this->getClient()->uploadApi()->upload($imagen->getRealPath(), [
             'folder'        => $carpeta,
             'resource_type' => 'image',
         ]);
@@ -32,16 +30,12 @@ class CloudinaryService
         ];
     }
 
-    /**
-     * Elimina una imagen de Cloudinary por su public_id.
-     * No lanza excepción si el public_id es null o vacío.
-     */
     public function eliminarImagen(?string $publicId): void
     {
-        if (! $publicId) {
+        if (!$publicId) {
             return;
         }
 
-        $this->cloudinary->uploadApi()->destroy($publicId);
+        $this->getClient()->uploadApi()->destroy($publicId);
     }
 }

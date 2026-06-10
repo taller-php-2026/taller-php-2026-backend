@@ -8,6 +8,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ServicioService
 {
+    protected $primaryKey = 'idServicio';
+
     public function getAll(): Collection
     {
         return Servicio::all();

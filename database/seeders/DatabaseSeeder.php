@@ -38,18 +38,17 @@ class DatabaseSeeder extends Seeder
 
         $usuarioIds = [];
         foreach ($usuariosData as $u) {
-    // Le pasamos 'idUsuario' como segundo parámetro para decirle a Postgres qué retornar
-    $id = DB::table('usuarios')->insertGetId(array_merge($u, [
-        'password'      => Hash::make('password123'),
-        'activo'        => 1,
-        'fechaRegistro' => now(),
-        'created_at'    => now(),
-        'updated_at'    => now(),
-    ]), 'idUsuario'); // <--- Acá está el truco
-    
-    $usuarioIds[] = $id;
-}
-        
+            // Le pasamos 'idUsuario' como segundo parámetro para decirle a Postgres qué retornar
+            $id = DB::table('usuarios')->insertGetId(array_merge($u, [
+                'password'      => Hash::make('password123'),
+                'activo'        => 1,
+                'fechaRegistro' => now(),
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ]), 'idUsuario'); // <--- Acá está el truco
+            
+            $usuarioIds[] = $id;
+        }
 
         [
             $idCliente1,
