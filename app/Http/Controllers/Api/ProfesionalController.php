@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProfesionalRequest;
 use App\Http\Requests\UpdateProfesionalRequest;
 use App\Services\ProfesionalService;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Request;
 use Illuminate\Http\Request;
 use App\Models\Profesional;
 use illuminate\Support\Facades\Hash;
@@ -17,6 +19,8 @@ class ProfesionalController extends Controller
 
     public function index()
     {
+        $this->adminOnly(request());
+
         $profesionales = $this->profesionalService->getAll();
 
         return response()->json([
@@ -26,6 +30,8 @@ class ProfesionalController extends Controller
 
     public function store(StoreProfesionalRequest $request)
     {
+        $this->adminOnly($request);
+
         $profesional = $this->profesionalService->create($request->validated());
 
         return response()->json([
@@ -36,6 +42,8 @@ class ProfesionalController extends Controller
 
     public function show(int $id)
     {
+        $this->ensureOwnProfessionalOrAdmin(request(), (int) $id);
+
         $profesional = $this->profesionalService->getById((int) $id);
 
         return response()->json([
@@ -45,6 +53,8 @@ class ProfesionalController extends Controller
 
     public function update(UpdateProfesionalRequest $request, int $id)
     {
+        $this->ensureOwnProfessionalOrAdmin($request, (int) $id);
+
         $profesional = $this->profesionalService->getById((int) $id);
         $profesional = $this->profesionalService->update($profesional, $request->validated());
 
@@ -114,6 +124,8 @@ class ProfesionalController extends Controller
 }
     public function destroy(int $id)
     {
+        $this->adminOnly(request());
+
         $profesional = $this->profesionalService->getById((int) $id);
         $this->profesionalService->delete($profesional);
 
@@ -121,5 +133,32 @@ class ProfesionalController extends Controller
             'message' => 'Profesional eliminado correctamente',
         ]);
     }
-}
 
+    private function ensureOwnProfessionalOrAdmin(Request $request, int $idProfesional): void
+    {
+        $user = $request->user();
+        $user?->loadMissing(['profesional', 'administrador']);
+
+        if ($user && ($user->administrador || ($user->profesional && (int) $user->idUsuario === $idProfesional))) {
+            return;
+        }
+
+        throw new HttpResponseException(response()->json([
+            'message' => 'No tenés permisos para modificar este profesional.',
+        ], 403));
+    }
+
+    private function adminOnly(Request $request): void
+    {
+        $user = $request->user();
+        $user?->loadMissing('administrador');
+
+        if ($user && $user->administrador) {
+            return;
+        }
+
+        throw new HttpResponseException(response()->json([
+            'message' => 'Solo administradores pueden realizar esta acción.',
+        ], 403));
+    }
+}

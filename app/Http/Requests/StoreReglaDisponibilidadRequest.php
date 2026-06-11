@@ -21,7 +21,7 @@ class StoreReglaDisponibilidadRequest extends FormRequest
             'bufferMinutos'  => 'required|integer|min:0',
             'activa'         => 'nullable|boolean',
             'idAgenda'       => 'required|integer|exists:agendas,idAgenda',
-            'idProfesional'  => 'required|integer|exists:profesionales,idUsuario',
+            'idProfesional'  => 'sometimes|integer|exists:profesionales,idUsuario',
         ];
     }
 }

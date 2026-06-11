@@ -20,7 +20,7 @@ class StorePaqueteServicioRequest extends FormRequest
             'modalidad'        => 'sometimes|in:presencial,virtual,hibrida',
             'idUbicacion'      => 'nullable|exists:ubicaciones,idUbicacion',
             'idVideoSesion'    => 'nullable|exists:video_sesiones,idVideoSesion',
-            'idProfesional'    => 'required|integer|exists:profesionales,idUsuario',
+            'idProfesional'    => 'sometimes|integer|exists:profesionales,idUsuario',
             'servicios_ids'    => 'required|array|min:1',
             'servicios_ids.*'  => 'integer|exists:servicios,idServicio',
             'totalSesiones'    => 'required|integer|min:1',

@@ -14,7 +14,7 @@ class UpdatePaqueteServicioRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('paquete_servicio');
+        $id = $this->route('paquete_servicio') ?? $this->route('id');
 
         return [
             'idServicio'    => [
