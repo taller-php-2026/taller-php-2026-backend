@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateReservaRequest;
 use App\Http\Requests\VideoTokenRequest;
 use App\Services\LiveKitService;
 use App\Services\ReservaService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 
 class ReservaController extends Controller
@@ -22,13 +23,33 @@ class ReservaController extends Controller
 
     public function index(\Illuminate\Http\Request $request)
     {
+        $user = $request->user();
+        $user?->loadMissing(['administrador', 'profesional', 'cliente']);
+
         $idProfesional = $request->query('idProfesional');
-        if ($idProfesional) {
+
+        if ($user?->administrador) {
+            $query = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario']);
+            if ($idProfesional) {
+                $query->where('idProfesional', $idProfesional);
+            }
+            $reservas = $query->get();
+        } elseif ($user?->profesional) {
+            if ($idProfesional && (int) $idProfesional !== (int) $user->idUsuario) {
+                throw new HttpResponseException(response()->json([
+                    'message' => 'No tenés permisos para consultar reservas de otro profesional.',
+                ], 403));
+            }
+
             $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario'])
-                ->where('idProfesional', $idProfesional)
+                ->where('idProfesional', $user->idUsuario)
                 ->get();
+        } elseif ($user?->cliente) {
+            $reservas = $this->reservaService->getReservasByCliente((int) $user->idUsuario);
         } else {
-            $reservas = $this->reservaService->getAll();
+            throw new HttpResponseException(response()->json([
+                'message' => 'No tenés permisos para consultar reservas.',
+            ], 403));
         }
 
         return response()->json([
@@ -69,6 +90,28 @@ class ReservaController extends Controller
 
         return response()->json([
             'message' => 'Reservas del cliente obtenidas correctamente',
+            'data'    => $reservas,
+        ]);
+    }
+
+    public function misReservasProfesional(Request $request)
+    {
+        $user = $request->user();
+        $user?->loadMissing('profesional');
+
+        if (! $user || ! $user->profesional) {
+            return response()->json([
+                'message' => 'Solo los profesionales pueden consultar sus reservas.',
+            ], 403);
+        }
+
+        $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario'])
+            ->where('idProfesional', $user->idUsuario)
+            ->orderBy('fechaReserva')
+            ->get();
+
+        return response()->json([
+            'message' => 'Reservas del profesional obtenidas correctamente',
             'data'    => $reservas,
         ]);
     }

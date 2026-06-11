@@ -31,6 +31,40 @@ class AuthController extends Controller
             'activo'         => (bool) $usuario->activo,
             'roles'          => $usuario->roles,
             'tipoPrincipal'  => $usuario->tipoPrincipal,
+            'imagenPerfilUrl' => $usuario->imagenPerfilUrl,
+        ];
+    }
+
+    private function buildProfesionalPayload(Usuario $usuario): ?array
+    {
+        $usuario->loadMissing('profesional');
+
+        if (! $usuario->profesional) {
+            return null;
+        }
+
+        return [
+            'idProfesional'   => $usuario->profesional->idUsuario,
+            'idUsuario'       => $usuario->profesional->idUsuario,
+            'nombreNegocio'   => $usuario->profesional->nombreNegocio,
+            'descripcion'     => $usuario->profesional->descripcion,
+            'ratingPromedio'  => $usuario->profesional->ratingPromedio,
+            'imagen'          => $usuario->imagenPerfilUrl,
+            'imagenPerfilUrl' => $usuario->imagenPerfilUrl,
+        ];
+    }
+
+    private function buildClientePayload(Usuario $usuario): ?array
+    {
+        $usuario->loadMissing('cliente');
+
+        if (! $usuario->cliente) {
+            return null;
+        }
+
+        return [
+            'idCliente' => $usuario->cliente->idUsuario,
+            'idUsuario' => $usuario->cliente->idUsuario,
         ];
     }
 
@@ -103,9 +137,25 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json([
-            'usuario' => $this->buildUsuarioPayload($request->user()),
-        ]);
+        $usuario = $request->user();
+        $usuarioPayload = $this->buildUsuarioPayload($usuario);
+        $response = [
+            'usuario' => $usuarioPayload,
+        ];
+
+        $profesionalPayload = $this->buildProfesionalPayload($usuario);
+        if ($profesionalPayload) {
+            $response['profesional'] = $profesionalPayload;
+            $response['usuario']['profesional'] = $profesionalPayload;
+        }
+
+        $clientePayload = $this->buildClientePayload($usuario);
+        if ($clientePayload) {
+            $response['cliente'] = $clientePayload;
+            $response['usuario']['cliente'] = $clientePayload;
+        }
+
+        return response()->json($response);
     }
 
     public function completarPerfil(CompletarPerfilRequest $request): JsonResponse
