@@ -9,9 +9,11 @@ use App\Models\PaqueteComprado;
 use App\Models\Reserva;
 use App\Models\Resena;
 use App\Models\Profesional;
+use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ReservaService
@@ -38,6 +40,19 @@ class ReservaService
     public function getById(int $id): Reserva
     {
         return Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
+    }
+
+    public function getReservasByCliente(int $idCliente): Collection
+    {
+        return Reserva::with([
+            'servicio',
+            'profesional.usuario',
+            'horario',
+            'pago',
+        ])
+            ->where('idCliente', $idCliente)
+            ->orderBy('fechaReserva', 'desc')
+            ->get();
     }
 
     public function create(array $data): Reserva
@@ -194,20 +209,36 @@ class ReservaService
         return $result;
     }
 
-    public function cancelar(int $id): array
+    public function cancelar(int $id, Usuario $usuario): array
     {
         $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
 
+        $this->validarPermisoCancelacion($reserva, $usuario);
+
         match ($reserva->estado) {
-            'cancelada'  => throw new HttpException(409, 'La reserva ya está cancelada.'),
-            'completada' => throw new HttpException(409, 'No se puede cancelar una reserva completada.'),
-            'enCurso'    => throw new HttpException(409, 'No se puede cancelar una reserva que está en curso.'),
-            default      => null,
+            'pendiente', 'confirmada' => null,
+            'cancelada'               => throw new HttpException(422, 'La reserva ya está cancelada.'),
+            'enCurso'                 => throw new HttpException(422, 'No se puede cancelar una reserva que está en curso.'),
+            'completada', 'finalizada' => throw new HttpException(422, 'No se puede cancelar una reserva finalizada.'),
+            'no_asistida'             => throw new HttpException(422, 'No se puede cancelar una reserva marcada como no asistida.'),
+            default                   => throw new HttpException(422, 'El estado de la reserva no permite cancelación.'),
         };
+
+        if ($reserva->pago?->estado === 'aprobado') {
+            Log::info(
+                'Reserva cancelada. Pago aprobado asociado; requiere revisión administrativa para reembolso si corresponde.',
+                [
+                    'idReserva' => $reserva->idReserva,
+                    'idPago'    => $reserva->pago->idPago,
+                    'idUsuario' => $usuario->idUsuario,
+                ]
+            );
+        }
 
         if ($reserva->idPaqueteComprado === null) {
             $result = DB::transaction(function () use ($reserva) {
                 $reserva->estado = 'cancelada';
+                $reserva->comentarios = 'Cancelada por el usuario';
                 $reserva->save();
 
                 $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
@@ -237,6 +268,7 @@ class ReservaService
             $paquete = PaqueteComprado::lockForUpdate()->findOrFail($reserva->idPaqueteComprado);
 
             $reserva->estado = 'cancelada';
+            $reserva->comentarios = 'Cancelada por el usuario';
             $reserva->save();
 
             $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
@@ -270,6 +302,25 @@ class ReservaService
         broadcast(new ReservaActualizada($result['reserva'], 'cancelada'));
 
         return $result;
+    }
+
+    private function validarPermisoCancelacion(Reserva $reserva, Usuario $usuario): void
+    {
+        $usuario->loadMissing('administrador', 'profesional', 'cliente');
+
+        if ($usuario->administrador) {
+            return;
+        }
+
+        if ($usuario->cliente && (int) $reserva->idCliente === (int) $usuario->idUsuario) {
+            return;
+        }
+
+        if ($usuario->profesional && (int) $reserva->idProfesional === (int) $usuario->idUsuario) {
+            return;
+        }
+
+        throw new HttpException(403, 'No tenés permiso para cancelar esta reserva.');
     }
 
     public function completar(int $id): Reserva
