@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateProfesionalRequest;
 use App\Services\ProfesionalService;
 use Illuminate\Http\Request;
 use App\Models\Profesional;
+use illuminate\Support\Facades\Hash;
+use Cloudinary\Cloudinary;
 
 class ProfesionalController extends Controller
 {
@@ -51,45 +53,65 @@ class ProfesionalController extends Controller
             'data'    => $profesional,
         ]);
     }
+    
     public function updatePerfil(int $id, Request $request)
-    {
-        $profesional = Profesional::find($id);
+{
+    $cloudinary = new Cloudinary();
 
-        if (!$profesional) {
-            return response()->json([
-                'message' => 'Profesional no encontrado'
-            ], 404);
-        }
+    $profesional = Profesional::find($id);
 
-        $usuario = $profesional->usuario;
-
-        if (!$usuario) {
-            return response()->json([
-                'message' => 'Usuario no encontrado'
-            ], 404);
-        }
-
-        // 🔹 actualizar usuario
-        $usuario->update($request->only([
-            'nombre',
-            'email',
-            'telefono'
-        ]));
-
-        // 🔹 actualizar profesional (incluye nombreNegocio)
-        $profesional->update($request->only([
-            'descripcion',
-            'especialidad',
-            'ubicacion',
-            'nombreNegocio'
-        ]));
-
+    if (!$profesional) {
         return response()->json([
-            'message' => 'Perfil actualizado correctamente',
-            'usuario' => $usuario,
-            'profesional' => $profesional
+            'message' => 'Profesional no encontrado'
+        ], 404);
+    }
+
+    $usuario = $profesional->usuario;
+
+    if (!$usuario) {
+        return response()->json([
+            'message' => 'Usuario no encontrado'
+        ], 404);
+    }
+
+    $usuario->update($request->only([
+        'nombre',
+        'email',
+        'telefono'
+    ]));
+
+    if ($request->filled('password')) {
+        $usuario->update([
+            'password' => Hash::make($request->password)
         ]);
     }
+
+    $profesional->update($request->only([
+        'nombreNegocio'
+    ]));
+
+    if ($request->hasFile('logo')) {
+
+        $logo = $request->file('logo');
+
+        $uploadedLogo = $cloudinary->uploadApi()->upload(
+            $logo->getRealPath(),
+            [
+                'folder' => 'profesionales/logos'
+            ]
+        );
+
+        $profesional->logo = $uploadedLogo['secure_url'];
+    }
+
+    $profesional->save();
+
+    return response()->json([
+        'message' => 'Perfil actualizado correctamente',
+        'usuario' => $usuario,
+        'profesional' => $profesional
+    ]);
+}
     public function destroy(int $id)
     {
         $profesional = $this->profesionalService->getById((int) $id);
