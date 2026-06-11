@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProfesionalRequest;
 use App\Http\Requests\UpdateProfesionalRequest;
 use App\Services\ProfesionalService;
+use Illuminate\Http\Request;
+use App\Models\Profesional;
 
 class ProfesionalController extends Controller
 {
@@ -49,7 +51,45 @@ class ProfesionalController extends Controller
             'data'    => $profesional,
         ]);
     }
+    public function updatePerfil(int $id, Request $request)
+    {
+        $profesional = Profesional::find($id);
 
+        if (!$profesional) {
+            return response()->json([
+                'message' => 'Profesional no encontrado'
+            ], 404);
+        }
+
+        $usuario = $profesional->usuario;
+
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        // 🔹 actualizar usuario
+        $usuario->update($request->only([
+            'nombre',
+            'email',
+            'telefono'
+        ]));
+
+        // 🔹 actualizar profesional (incluye nombreNegocio)
+        $profesional->update($request->only([
+            'descripcion',
+            'especialidad',
+            'ubicacion',
+            'nombreNegocio'
+        ]));
+
+        return response()->json([
+            'message' => 'Perfil actualizado correctamente',
+            'usuario' => $usuario,
+            'profesional' => $profesional
+        ]);
+    }
     public function destroy(int $id)
     {
         $profesional = $this->profesionalService->getById((int) $id);

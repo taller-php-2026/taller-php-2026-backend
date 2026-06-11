@@ -71,6 +71,9 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 Route::middleware('auth:sanctum')->group(function () {
+    Route::patch('profesionales/{id}/perfil', [ProfesionalController::class, 'updatePerfil']);
+});
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/me/reservas', [ReservaController::class, 'misReservas']);
