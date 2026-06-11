@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
           foreach ($usuariosData as $u) {
             $id = DB::table('usuarios')->insertGetId(
                 array_merge($u, [
-                    'password'      => Hash::make('password123'),
+                    'password'      => 'password123',
                     'activo'        => 1,
                     'fechaRegistro' => now(),
                     'created_at'    => now(),
