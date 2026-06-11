@@ -330,7 +330,33 @@ class ReservaService
             ];
         });
     }
+    public function enviarRecordatorios48Horas(): int
+    {
+        $reservas = Reserva::with(self::WITH_RELATIONS)
+            ->where('estado', 'confirmada')
+            ->where('recordatorio48hEnviado', false)
+            ->whereBetween(
+                'fechaReserva',
+                [now()->addHours(47), now()->addHours(48)]
+            )
+            ->get();
 
+        foreach ($reservas as $reserva) {
+
+            $this->notificacionService->notificar(
+                $reserva->idCliente,
+                $reserva->cliente->usuario->email,
+                'Recordatorio de reserva',
+                'Tu reserva será dentro de 48 horas. Si necesitas cancelarla o reprogramarla, hazlo con anticipación.',
+                'recordatorio'
+            );
+
+            $reserva->recordatorio48hEnviado = true;
+            $reserva->save();
+        }
+
+        return $reservas->count();
+    }
     public function resena(int $id, array $data): array
     {
         $reserva = Reserva::with(['cliente', 'profesional', 'servicio', 'horario'])->findOrFail($id);
