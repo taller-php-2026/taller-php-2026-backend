@@ -18,6 +18,7 @@ class Reserva extends Model
         'fechaReserva',
         'estado',
         'comentarios',
+        'recordatorio48hEnviado',
         'idVideoSesion',
     ];
 
