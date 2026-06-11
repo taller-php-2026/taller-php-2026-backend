@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         $usuarioIds = [];
-        foreach ($usuariosData as $u) {
+          foreach ($usuariosData as $u) {
             $id = DB::table('usuarios')->insertGetId(
                 array_merge($u, [
                     'password'      => Hash::make('password123'),
