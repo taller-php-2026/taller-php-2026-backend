@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateProfesionalRequest;
 use App\Services\ProfesionalService;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Request;
 use App\Models\Profesional;
 use illuminate\Support\Facades\Hash;
 use Cloudinary\Cloudinary;
