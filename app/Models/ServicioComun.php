@@ -14,6 +14,16 @@ class ServicioComun extends Model
 
     public function servicio()
     {
-    return $this->belongsTo(Servicio::class, 'idServicio');
+        return $this->belongsTo(Servicio::class, 'idServicio');
+    }
+
+    public function paquetesServicios()
+    {
+        return $this->belongsToMany(
+            PaqueteServicio::class,
+            'paquetes_servicios_comunes',
+            'idServicioComun',
+            'idPaqueteServicio'
+        );
     }
 }

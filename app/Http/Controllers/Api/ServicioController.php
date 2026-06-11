@@ -28,11 +28,15 @@ class ServicioController extends Controller
 
     public function store(StoreServicioRequest $request)
     {
-        $servicio = $this->servicioService->create($request->validated());
+        $validated = $request->validated();
+        $servicio = $this->servicioService->create($validated);
+        
+        // Asociar profesional al servicio creado
+        $servicio->profesionales()->attach($validated['idProfesional']);
 
         return response()->json([
             'message' => 'Servicio creado correctamente',
-            'data'    => $servicio,
+            'data'    => $servicio->load('profesionales'),
         ], 201);
     }
 

@@ -16,4 +16,9 @@ class Ciclo extends Model
     {
         return $this->hasMany(Agenda::class, 'idCiclo');
     }
+
+    public function rangoHorarios()
+    {
+        return $this->hasMany(RangoHorario::class, 'idCiclo');
+    }
 }

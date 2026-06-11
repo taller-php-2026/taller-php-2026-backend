@@ -81,6 +81,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('reservas/{id}/mercadopago',           [MercadoPagoController::class, 'crearPreferenciaReserva']);
     Route::post('paquetes-comprados/{id}/mercadopago', [MercadoPagoController::class, 'crearPreferenciaPaquete']);
 
+    Route::get('profesionales/{id}/metricas', [ProfesionalMetricasController::class, 'metricas']);
+
     Route::prefix('admin')->group(function () {
         Route::get('metricas',               [AdminController::class, 'metricas']);
         Route::get('reservas/profesionales', [AdminController::class, 'reservasPorProfesional']);

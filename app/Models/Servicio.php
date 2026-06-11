@@ -31,7 +31,7 @@ class Servicio extends Model
     }
     public function ubicacion()
     {
-        return $this->hasOne(Ubicacion::class, 'idServicio');
+        return $this->belongsTo(Ubicacion::class, 'idUbicacion');
     }
     public function servicioComun()
     {
@@ -43,7 +43,7 @@ class Servicio extends Model
     }
     public function videoSesion()
     {
-        return $this->hasOne(VideoSesion::class, 'idServicio');
+        return $this->belongsTo(VideoSesion::class, 'idVideoSesion');
     }
 
     public function profesionales()

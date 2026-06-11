@@ -19,9 +19,16 @@ class ReservaController extends Controller
         private LiveKitService $liveKitService,
     ) {}
 
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $reservas = $this->reservaService->getAll();
+        $idProfesional = $request->query('idProfesional');
+        if ($idProfesional) {
+            $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario'])
+                ->where('idProfesional', $idProfesional)
+                ->get();
+        } else {
+            $reservas = $this->reservaService->getAll();
+        }
 
         return response()->json([
             'data' => $reservas,

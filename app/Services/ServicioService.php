@@ -17,7 +17,7 @@ class ServicioService
 
     public function getById(int $id): Servicio
     {
-        return Servicio::with(['servicioComun'])->findOrFail($id);
+        return Servicio::with(['servicioComun', 'ubicacion', 'videoSesion'])->findOrFail($id);
     }
 
     public function create(array $data): Servicio
@@ -40,6 +40,7 @@ class ServicioService
     public function buscar(array $filtros): LengthAwarePaginator
     {
         $query = Servicio::query()
+            ->with(['paqueteServicio', 'ubicacion', 'videoSesion'])
             ->select('servicios.*')
             ->leftJoin('profesionales_servicios', 'servicios.idServicio', '=', 'profesionales_servicios.idServicio')
             ->leftJoin('profesionales', 'profesionales_servicios.idProfesional', '=', 'profesionales.idUsuario');
@@ -102,6 +103,10 @@ class ServicioService
                 'duracionMinutos'  => $servicio->duracionMinutos,
                 'modalidad'        => $servicio->modalidad,
                 'activo'           => (bool) $servicio->activo,
+                'imagenUrl'        => $servicio->imagenUrl,
+                'paquete_servicio' => $servicio->paqueteServicio,
+                'ubicacion'        => $servicio->ubicacion,
+                'video_sesion'     => $servicio->videoSesion,
                 'profesional'      => $profesional ? [
                     'idUsuario'       => $profesional->idUsuario,
                     'nombreNegocio'   => $profesional->nombreNegocio,

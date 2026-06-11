@@ -9,12 +9,12 @@ class CicloService
 {
     public function getAll(): Collection
     {
-        return Ciclo::all();
+        return Ciclo::with('rangoHorarios')->get();
     }
 
     public function getById(int $id): Ciclo
     {
-        return Ciclo::findOrFail($id);
+        return Ciclo::with('rangoHorarios')->findOrFail($id);
     }
 
     public function create(array $data): Ciclo

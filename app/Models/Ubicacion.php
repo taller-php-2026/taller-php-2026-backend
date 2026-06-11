@@ -13,12 +13,13 @@ class Ubicacion extends Model
         'idServicio',
         'direccion',
         'ciudad',
+        'pais',
         'latitud',
         'longitud'
     ];
     
    public function servicio()
     {
-    return $this->belongsTo(Servicio::class, 'idServicio');
+        return $this->hasOne(Servicio::class, 'idUbicacion');
     }
 }

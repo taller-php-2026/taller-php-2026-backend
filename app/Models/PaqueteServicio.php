@@ -26,6 +26,16 @@ class PaqueteServicio extends Model
         return $this->belongsTo(Servicio::class, 'idServicio', 'idServicio');
     }
 
+    public function serviciosComunes()
+    {
+        return $this->belongsToMany(
+            ServicioComun::class,
+            'paquetes_servicios_comunes',
+            'idPaqueteServicio',
+            'idServicioComun'
+        );
+    }
+
     public function paquetesComprados()
     {
         return $this->hasMany(PaqueteComprado::class, 'idPaqueteServicio', 'idPaqueteServicio');
