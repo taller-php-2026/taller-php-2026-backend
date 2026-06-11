@@ -30,7 +30,7 @@ class ProfesionalController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         $profesional = $this->profesionalService->getById((int) $id);
 
@@ -39,7 +39,7 @@ class ProfesionalController extends Controller
         ]);
     }
 
-    public function update(UpdateProfesionalRequest $request, $id)
+    public function update(UpdateProfesionalRequest $request, int $id)
     {
         $profesional = $this->profesionalService->getById((int) $id);
         $profesional = $this->profesionalService->update($profesional, $request->validated());
@@ -50,7 +50,7 @@ class ProfesionalController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $profesional = $this->profesionalService->getById((int) $id);
         $this->profesionalService->delete($profesional);

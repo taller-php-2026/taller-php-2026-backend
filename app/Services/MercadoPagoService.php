@@ -28,6 +28,40 @@ class MercadoPagoService
     }
 
     /* =========================================================
+     *  COBRO CON TOKEN (BRICKS)
+     * ========================================================= */
+
+    public function cobrarConToken(int $idReserva, string $token, string $emailPayer): array
+    {
+        $reserva = Reserva::with(['servicio'])->findOrFail($idReserva);
+
+        try {
+            $payment = $this->paymentClient->create([
+                'token' => $token,
+                'description' => $reserva->servicio->nombre ?? 'Servicio',
+                'installments' => 1,
+                'payment_method_id' => 'master', // O inferir del token en producción
+                'payer' => [
+                    'email' => $emailPayer,
+                ],
+                'transaction_amount' => (float) $reserva->servicio->precio,
+                'external_reference' => "reserva_{$idReserva}",
+            ]);
+
+            // Procesar el pago localmente de inmediato con los datos de MP
+            return $this->procesarReserva($payment);
+        } catch (MPApiException $e) {
+            Log::error('MercadoPago cobrarConToken error', [
+                'message' => $e->getMessage(),
+                'response' => method_exists($e, 'getApiResponse')
+                    ? $e->getApiResponse()?->getContent()
+                    : null,
+            ]);
+            throw new \Symfony\Component\HttpKernel\Exception\HttpException(500, 'Error procesando cobro con Mercado Pago: ' . $e->getMessage());
+        }
+    }
+
+    /* =========================================================
      *  RESERVA
      * ========================================================= */
 
@@ -400,7 +434,6 @@ class MercadoPagoService
     public function consultarPago(string $paymentId): array
     {
         try {
-            
             $payment = $this->paymentClient->get((int) $paymentId);
             Log::info('ESTADO ACTUAL DEL PAGO', [
                 'id' => $payment->id,
@@ -408,6 +441,16 @@ class MercadoPagoService
                 'status_detail' => $payment->status_detail,
                 'external_reference' => $payment->external_reference,
             ]);
+
+            $ref = $payment->external_reference ?? null;
+            if ($ref) {
+                if (str_starts_with($ref, 'reserva_')) {
+                    $this->procesarReserva($payment);
+                } elseif (str_starts_with($ref, 'paquete_')) {
+                    $this->procesarPaquete($payment);
+                }
+            }
+
             return [
                 'payment_id' => $payment->id,
                 'status' => $payment->status,

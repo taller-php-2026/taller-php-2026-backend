@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\ReservaSlotController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\MercadoPagoController;
+use App\Http\Controllers\Api\ProfesionalMetricasController;
 
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('profesionales', ProfesionalController::class);
@@ -35,7 +36,6 @@ Route::post('profesionales/{id}/reservar-slot', [ReservaSlotController::class, '
 Route::apiResource('reservas', ReservaController::class);
 Route::post('reservas/cancelar-vencidas', [ReservaController::class, 'cancelarVencidas']);
 Route::post('reservas/{id}/pagar', [ReservaController::class, 'pagar']);
-Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
 Route::post('reservas/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
 Route::post('reservas/{id}/completar', [ReservaController::class, 'completar']);
 Route::post('reservas/{id}/resena', [ReservaController::class, 'resena']);
@@ -73,12 +73,16 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/me/reservas', [ReservaController::class, 'misReservas']);
     Route::post('/auth/completar-perfil', [AuthController::class, 'completarPerfil']);
     Route::post('reservas/{id}/video-token', [ReservaController::class, 'videoToken']);
+    Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
 
     // Mercado Pago — requieren usuario autenticado
     Route::post('reservas/{id}/mercadopago',           [MercadoPagoController::class, 'crearPreferenciaReserva']);
     Route::post('paquetes-comprados/{id}/mercadopago', [MercadoPagoController::class, 'crearPreferenciaPaquete']);
+
+    Route::get('profesionales/{id}/metricas', [ProfesionalMetricasController::class, 'metricas']);
 
     Route::prefix('admin')->group(function () {
         Route::get('metricas',               [AdminController::class, 'metricas']);

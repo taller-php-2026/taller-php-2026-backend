@@ -27,11 +27,12 @@ class GoogleAuthController extends Controller
             if (! $usuario) {
                 $esNuevo = true;
                 $usuario = Usuario::create([
-                    'nombre'   => $googleUser->getName(),
-                    'email'    => $googleUser->getEmail(),
-                    'password' => bcrypt(str()->random(32)),
-                    'telefono' => '',
-                    'activo'   => true,
+                    'nombre'          => $googleUser->getName(),
+                    'email'           => $googleUser->getEmail(),
+                    'password'        => bcrypt(str()->random(32)),
+                    'telefono'        => '',
+                    'imagenPerfilUrl' => $googleUser->getAvatar(),
+                    'activo'          => true,
                 ]);
             }
 

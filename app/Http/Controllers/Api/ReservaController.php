@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateReservaRequest;
 use App\Http\Requests\VideoTokenRequest;
 use App\Services\LiveKitService;
 use App\Services\ReservaService;
+use Illuminate\Http\Request;
 
 class ReservaController extends Controller
 {
@@ -19,9 +20,16 @@ class ReservaController extends Controller
         private LiveKitService $liveKitService,
     ) {}
 
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $reservas = $this->reservaService->getAll();
+        $idProfesional = $request->query('idProfesional');
+        if ($idProfesional) {
+            $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario'])
+                ->where('idProfesional', $idProfesional)
+                ->get();
+        } else {
+            $reservas = $this->reservaService->getAll();
+        }
 
         return response()->json([
             'data' => $reservas,
@@ -44,6 +52,24 @@ class ReservaController extends Controller
 
         return response()->json([
             'data' => $reserva,
+        ]);
+    }
+
+    public function misReservas(Request $request)
+    {
+        $user = $request->user();
+
+        if (! $user->cliente) {
+            return response()->json([
+                'message' => 'Solo los clientes pueden consultar sus reservas.',
+            ], 403);
+        }
+
+        $reservas = $this->reservaService->getReservasByCliente((int) $user->idUsuario);
+
+        return response()->json([
+            'message' => 'Reservas del cliente obtenidas correctamente',
+            'data'    => $reservas,
         ]);
     }
 
@@ -78,9 +104,9 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function cancelar(int $id)
+    public function cancelar(Request $request, int $id)
     {
-        $data = $this->reservaService->cancelar((int) $id);
+        $data = $this->reservaService->cancelar((int) $id, $request->user());
 
         return response()->json([
             'message' => 'Reserva cancelada correctamente',
@@ -143,4 +169,3 @@ class ReservaController extends Controller
         ]);
     }
 }
-

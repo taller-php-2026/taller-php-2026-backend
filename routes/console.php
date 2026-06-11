@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('reservas:cancelar-vencidas')->everyMinute();
+Schedule::command('reservas:recordatorios-48h')->hourly();
