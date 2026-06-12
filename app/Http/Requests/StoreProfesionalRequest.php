@@ -17,6 +17,7 @@ class StoreProfesionalRequest extends FormRequest
             'idUsuario'     => 'required|integer|exists:usuarios,idUsuario|unique:profesionales,idUsuario',
             'nombreNegocio' => 'required|string|max:255',
             'descripcion'   => 'required|string|max:255',
+            'color'         => 'sometimes|string|max:7',
         ];
     }
 }

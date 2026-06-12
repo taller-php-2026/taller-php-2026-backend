@@ -49,6 +49,7 @@ class AuthController extends Controller
             'nombreNegocio'   => $usuario->profesional->nombreNegocio,
             'descripcion'     => $usuario->profesional->descripcion,
             'ratingPromedio'  => $usuario->profesional->ratingPromedio,
+            'color'           => $usuario->profesional->color,
             'imagen'          => $usuario->imagenPerfilUrl,
             'imagenPerfilUrl' => $usuario->imagenPerfilUrl,
         ];
