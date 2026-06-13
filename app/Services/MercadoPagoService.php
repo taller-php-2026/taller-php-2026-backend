@@ -105,10 +105,14 @@ class MercadoPagoService
                 'email' => $reserva->cliente->usuario->email ?? '',
             ],
             'back_urls'          => $backUrls,
-            'auto_return'        => 'approved',
+            // 'auto_return'        => 'approved',
             'external_reference' => "reserva_{$idReserva}",
             'notification_url'   => $notificationUrl,
         ];
+
+        if (config('app.env') === 'production') {
+            $payload['auto_return'] = 'approved';
+        }
 
         Log::info('MercadoPago preference payload', [
             'idReserva'        => $reserva->idReserva,
@@ -321,7 +325,6 @@ class MercadoPagoService
                 str_starts_with($ref, 'paquete_') => $this->procesarPaquete($payment),
                 default => ['success' => true],
             };
-
         } catch (MPApiException $e) {
             Log::error('Webhook error MP', [
                 'message' => $e->getMessage(),
@@ -374,16 +377,16 @@ class MercadoPagoService
 
             if ($estado === 'aprobado') {
 
-    $email = optional($reserva->cliente->usuario)->email;
+                $email = optional($reserva->cliente->usuario)->email;
 
-            app(NotificacionService::class)->notificar(
-                $reserva->idCliente,
-                $email,
-                'Pago confirmado',
-                'Tu reserva fue confirmada.',
-                'confirmacion'
-            );
-        }
+                app(NotificacionService::class)->notificar(
+                    $reserva->idCliente,
+                    $email,
+                    'Pago confirmado',
+                    'Tu reserva fue confirmada.',
+                    'confirmacion'
+                );
+            }
 
             return ['success' => true];
         });
