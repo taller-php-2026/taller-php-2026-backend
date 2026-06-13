@@ -67,9 +67,10 @@ class ReservaController extends Controller
         ], 201);
     }
 
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
         $reserva = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reserva, $request->user(), 'view');
 
         return response()->json([
             'data' => $reserva,
@@ -119,6 +120,7 @@ class ReservaController extends Controller
     public function update(UpdateReservaRequest $request, int $id)
     {
         $reserva = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reserva, $request->user(), 'update');
         $reserva = $this->reservaService->update($reserva, $request->validated());
 
         return response()->json([
@@ -127,9 +129,10 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
         $reserva = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reserva, $request->user(), 'delete');
         $this->reservaService->delete($reserva);
 
         return response()->json([
@@ -139,6 +142,9 @@ class ReservaController extends Controller
 
     public function reprogramar(ReprogramarReservaRequest $request, int $id)
     {
+        $reserva = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reserva, $request->user(), 'reprogram');
+
         $data = $this->reservaService->reprogramar((int) $id, $request->validated());
 
         return response()->json([
@@ -159,6 +165,9 @@ class ReservaController extends Controller
 
     public function pagar(PagarReservaRequest $request, int $id)
     {
+        $reservaActual = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reservaActual, $request->user(), 'pay');
+
         $reserva = $this->reservaService->pagar((int) $id, $request->validated());
 
         return response()->json([
@@ -167,8 +176,11 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function completar(int $id)
+    public function completar(Request $request, int $id)
     {
+        $reservaActual = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reservaActual, $request->user(), 'complete');
+
         $reserva = $this->reservaService->completar((int) $id);
 
         return response()->json([
@@ -179,6 +191,10 @@ class ReservaController extends Controller
 
     public function resena(StoreResenaRequest $request, int $id)
     {
+        $reserva = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reserva, $request->user(), 'review');
+        $this->reservaService->assertReviewable($reserva);
+
         $result = $this->reservaService->resena((int) $id, $request->validated());
 
         return response()->json([

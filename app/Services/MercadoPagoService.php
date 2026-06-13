@@ -74,6 +74,10 @@ class MercadoPagoService
             abort(422, 'No se puede pagar una reserva cancelada.');
         }
 
+        if (in_array($reserva->estado, ['completada', 'finalizada', 'enCurso', 'no_asistida'], true)) {
+            abort(422, 'El estado de la reserva no permite iniciar un pago.');
+        }
+
         if ($reserva->pago && $reserva->pago->estado === 'aprobado') {
             abort(409, 'La reserva ya está pagada.');
         }
