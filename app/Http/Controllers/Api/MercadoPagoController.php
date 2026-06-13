@@ -4,19 +4,27 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\MercadoPagoService;
+use App\Services\ReservaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class MercadoPagoController extends Controller
 {
-    public function __construct(private MercadoPagoService $mercadoPagoService) {}
+    public function __construct(
+        private MercadoPagoService $mercadoPagoService,
+        private ReservaService $reservaService,
+    ) {}
 
     /**
      * POST /api/reservas/{id}/mercadopago
      * Crear preferencia de pago para una reserva
      */
-    public function crearPreferenciaReserva(int $id)
+    public function crearPreferenciaReserva(Request $request, int $id)
     {
+        $reserva = $this->reservaService->getById((int) $id);
+        $this->reservaService->authorizeReservaAction($reserva, $request->user(), 'mercadopago');
+        $this->reservaService->assertPayable($reserva);
+
         $resultado = $this->mercadoPagoService->createPreferenciaReserva((int) $id);
 
         return response()->json([
