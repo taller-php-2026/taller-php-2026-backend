@@ -47,7 +47,7 @@ class DisponibilidadService
         $queryReservas = Reserva::with('horario')
             ->where('idProfesional', $idProfesional)
             ->whereIn('estado', self::ESTADOS_ACTIVOS)
-            ->whereHas('horario', fn ($q) => $q->where('fecha', $fecha));
+            ->whereHas('horario', fn($q) => $q->where('fecha', $fecha));
 
         if ($reservaIgnoradaId !== null) {
             $queryReservas->where('idReserva', '!=', $reservaIgnoradaId);
@@ -80,6 +80,8 @@ class DisponibilidadService
         int $idServicio
     ): array {
         $slots = [];
+        $ahora = Carbon::now();
+        $esHoy = Carbon::parse($fecha)->isToday();
 
         foreach ($reglas as $regla) {
             $buffer = (int) ($regla->bufferMinutos ?? 0);
@@ -92,8 +94,16 @@ class DisponibilidadService
                 $slotInicio = $cursor->copy();
                 $slotFin    = $cursor->copy()->addMinutes($duracion);
 
-                if (!$this->solapaConReservas($slotInicio, $slotFin, $reservasActivas, $fecha)
-                    && !$this->solapaConExcepciones($slotInicio, $slotFin, $excepciones, $fecha)) {
+                // 👈 si es hoy, saltear slots que ya pasaron
+                if ($esHoy && $slotInicio->lte($ahora)) {
+                    $cursor->addMinutes($avance);
+                    continue;
+                }
+
+                if (
+                    !$this->solapaConReservas($slotInicio, $slotFin, $reservasActivas, $fecha)
+                    && !$this->solapaConExcepciones($slotInicio, $slotFin, $excepciones, $fecha)
+                ) {
                     $slots[] = [
                         'horaInicio'      => $slotInicio->format('H:i'),
                         'horaFin'         => $slotFin->format('H:i'),
