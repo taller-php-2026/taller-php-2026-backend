@@ -40,17 +40,20 @@ class ServicioService
     public function buscar(array $filtros): LengthAwarePaginator
     {
         $query = Servicio::query()
+            ->distinct()
             ->with(['paqueteServicio', 'ubicacion', 'videoSesion'])
             ->select('servicios.*')
             ->leftJoin('profesionales_servicios', 'servicios.idServicio', '=', 'profesionales_servicios.idServicio')
-            ->leftJoin('profesionales', 'profesionales_servicios.idProfesional', '=', 'profesionales.idUsuario');
+            ->leftJoin('profesionales', 'profesionales_servicios.idProfesional', '=', 'profesionales.idUsuario')
+            ->leftJoin('usuarios', 'profesionales.idUsuario', '=', 'usuarios.idUsuario');
 
         if (!empty($filtros['texto'])) {
             $texto = $filtros['texto'];
             $query->where(function ($q) use ($texto) {
                 $q->where('servicios.nombre', 'ILIKE', "%{$texto}%")
                     ->orWhere('servicios.descripcion', 'ILIKE', "%{$texto}%")
-                    ->orWhere('profesionales.nombreNegocio', 'ILIKE', "%{$texto}%");
+                    ->orWhere('profesionales.nombreNegocio', 'ILIKE', "%{$texto}%")
+                    ->orWhere('usuarios.nombre', 'ILIKE', "%{$texto}%");
             });
         }
 
