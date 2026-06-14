@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\MercadoPagoService;
+use App\Services\PaqueteCompradoService;
 use App\Services\ReservaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ class MercadoPagoController extends Controller
     public function __construct(
         private MercadoPagoService $mercadoPagoService,
         private ReservaService $reservaService,
+        private PaqueteCompradoService $paqueteCompradoService,
     ) {}
 
     /**
@@ -37,8 +39,11 @@ class MercadoPagoController extends Controller
      * POST /api/paquetes-comprados/{id}/mercadopago
      * Crear preferencia de pago para un paquete comprado
      */
-    public function crearPreferenciaPaquete(int $id)
+    public function crearPreferenciaPaquete(Request $request, int $id)
     {
+        $paqueteComprado = $this->paqueteCompradoService->getById((int) $id);
+        $this->paqueteCompradoService->assertClienteOwner($paqueteComprado, $request->user());
+
         $resultado = $this->mercadoPagoService->createPreferenciaPaquete((int) $id);
 
         return response()->json([

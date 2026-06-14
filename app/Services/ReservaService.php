@@ -30,6 +30,7 @@ class ReservaService
         'servicio',
         'pago',
         'horario',
+        'paqueteComprado.paqueteServicio.servicio',
     ];
 
     public function getAll(): Collection
@@ -110,6 +111,7 @@ class ReservaService
             'profesional.usuario',
             'horario',
             'pago',
+            'paqueteComprado.paqueteServicio.servicio',
         ])
             ->where('idCliente', $idCliente)
             ->orderBy('fechaReserva', 'desc')

@@ -29,7 +29,7 @@ class ReservaController extends Controller
         $idProfesional = $request->query('idProfesional');
 
         if ($user?->administrador) {
-            $query = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario']);
+            $query = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario', 'paqueteComprado.paqueteServicio.servicio']);
             if ($idProfesional) {
                 $query->where('idProfesional', $idProfesional);
             }
@@ -41,7 +41,7 @@ class ReservaController extends Controller
                 ], 403));
             }
 
-            $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario'])
+            $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario', 'paqueteComprado.paqueteServicio.servicio'])
                 ->where('idProfesional', $user->idUsuario)
                 ->get();
         } elseif ($user?->cliente) {
@@ -106,7 +106,7 @@ class ReservaController extends Controller
             ], 403);
         }
 
-        $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario'])
+        $reservas = \App\Models\Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio', 'pago', 'horario', 'paqueteComprado.paqueteServicio.servicio'])
             ->where('idProfesional', $user->idUsuario)
             ->orderBy('fechaReserva')
             ->get();
