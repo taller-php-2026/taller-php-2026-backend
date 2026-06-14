@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\PaqueteCompradoController;
 use App\Http\Controllers\Api\CicloController;
 use App\Http\Controllers\Api\RangoHorarioController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\ReservaSlotController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -118,6 +119,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('excepciones-disponibilidad', ExcepcionDisponibilidadController::class);
 
     Route::prefix('admin')->group(function () {
+        Route::get('logs', [ActivityLogController::class, 'index']);
         Route::get('metricas',               [AdminController::class, 'metricas']);
         Route::get('reservas/profesionales', [AdminController::class, 'reservasPorProfesional']);
         Route::get('reservas/servicios',     [AdminController::class, 'reservasPorServicio']);
