@@ -46,7 +46,6 @@ Route::apiResource('ubicaciones', UbicacionController::class);
 Route::apiResource('resenas', ResenaController::class);
 Route::apiResource('video-sesiones', VideoSesionController::class)->middleware('auth:sanctum');
 Route::apiResource('horarios', HorarioController::class);
-Route::apiResource('notificaciones', NotificacionController::class);
 Route::apiResource('pagos', PagoController::class);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -56,6 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('profesionales/{id}/perfil', [ProfesionalController::class, 'updatePerfil']);
 });
 Route::middleware('auth:sanctum')->group(function () {
+    Route::delete('notificaciones', [NotificacionController::class, 'destroyAll']);
+    Route::apiResource('notificaciones', NotificacionController::class);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/me/perfil', [UsuarioController::class, 'actualizarMiPerfil']);

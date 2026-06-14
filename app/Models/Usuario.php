@@ -22,6 +22,7 @@ class Usuario extends Authenticatable
     ];
 
     protected $hidden = ['password'];
+    protected $appends = ['roles', 'tipoPrincipal'];
 
     public function cliente()
     {

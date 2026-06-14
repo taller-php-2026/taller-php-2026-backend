@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             ]));
         }
 
-        // ─── 2. USUARIOS (3 clientes + 3 profesionales) ───────────────────
+        // ─── 2. USUARIOS (3 clientes + 3 profesionales + 1 admin) ───────────
         $usuariosData = [
             // clientes
             ['nombre' => 'Ana García',      'email' => 'ana@mail.com',      'telefono' => '091111111'],
@@ -34,13 +34,15 @@ class DatabaseSeeder extends Seeder
             ['nombre' => 'Dr. Pablo Ruiz',  'email' => 'pablo@mail.com',    'telefono' => '094444444'],
             ['nombre' => 'Lic. Sofía Mora', 'email' => 'sofia@mail.com',    'telefono' => '095555555'],
             ['nombre' => 'Dr. Lucas Pérez', 'email' => 'lucas@mail.com',    'telefono' => '096666666'],
+            // administrador
+            ['nombre' => 'Administrador',   'email' => 'admin@test.com',    'telefono' => '099999999'],
         ];
 
         $usuarioIds = [];
         foreach ($usuariosData as $u) {
             $id = DB::table('usuarios')->insertGetId(
                 array_merge($u, [
-                    'password'      => 'password123',
+                    'password'      => Hash::make('password123'),
                     'activo'        => 1,
                     'fechaRegistro' => now(),
                     'created_at'    => now(),
@@ -57,7 +59,8 @@ class DatabaseSeeder extends Seeder
             $idCliente3,
             $idProf1,
             $idProf2,
-            $idProf3
+            $idProf3,
+            $idAdmin
         ] = $usuarioIds;
 
         // ─── 3. CLIENTES ──────────────────────────────────────────────────
@@ -68,12 +71,19 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+        // ─── 3b. ADMINISTRADORES ──────────────────────────────────────────
+        DB::table('administradores')->insert([
+            'idUsuario'   => $idAdmin,
+            'nivelAcceso' => 'superadmin',
+            'created_at'  => now(),
+            'updated_at'  => now(),
+        ]);
 
         // ─── 4. PROFESIONALES ─────────────────────────────────────────────
         $profData = [
-            $idProf1 => ['nombreNegocio' => 'Clínica Ruiz',        'descripcion' => 'Médico clínico con 10 años de experiencia.',    'ratingPromedio' => 4.8],
-            $idProf2 => ['nombreNegocio' => 'Psicología Mora',     'descripcion' => 'Psicóloga especializada en terapia cognitiva.', 'ratingPromedio' => 4.6],
-            $idProf3 => ['nombreNegocio' => 'Consultorio Pérez',   'descripcion' => 'Nutricionista y coach de bienestar.',            'ratingPromedio' => 4.5],
+            $idProf1 => ['nombreNegocio' => 'Clínica Ruiz',        'descripcion' => 'Médico clínico con 10 años de experiencia.',    'ratingPromedio' => 4.8, 'color' => '#00685F'],
+            $idProf2 => ['nombreNegocio' => 'Psicología Mora',     'descripcion' => 'Psicóloga especializada en terapia cognitiva.', 'ratingPromedio' => 4.6, 'color' => '#3b82f6'],
+            $idProf3 => ['nombreNegocio' => 'Consultorio Pérez',   'descripcion' => 'Nutricionista y coach de bienestar.',            'ratingPromedio' => 4.5, 'color' => '#8b5cf6'],
         ];
         foreach ($profData as $idUsuario => $data) {
             DB::table('profesionales')->insert(array_merge($data, [

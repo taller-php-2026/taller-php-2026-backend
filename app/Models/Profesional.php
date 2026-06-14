@@ -12,7 +12,8 @@ class Profesional extends Model
         'idUsuario',
         'nombreNegocio',
         'descripcion',
-        'ratingPromedio'
+        'ratingPromedio',
+        'color'
     ];
     
     public function usuario()

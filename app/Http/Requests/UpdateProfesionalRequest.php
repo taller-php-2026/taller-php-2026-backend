@@ -16,6 +16,7 @@ class UpdateProfesionalRequest extends FormRequest
         return [
             'nombreNegocio' => 'sometimes|string|max:255',
             'descripcion'   => 'sometimes|string|max:255',
+            'color'         => 'sometimes|string|max:7',
         ];
     }
 }

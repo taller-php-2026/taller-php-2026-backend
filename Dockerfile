@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
         pdo_pgsql \
         zip \
         intl \
+        pcntl \
     && pecl install mongodb \
     && docker-php-ext-enable mongodb \
     && rm -rf /var/lib/apt/lists/*

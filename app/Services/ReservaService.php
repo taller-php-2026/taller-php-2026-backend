@@ -200,7 +200,60 @@ class ReservaService
             }
             $reserva->save();
 
-            return $reserva->fresh(self::WITH_RELATIONS);
+            $reservaFresh = $reserva->fresh(self::WITH_RELATIONS);
+            $servicio      = $reservaFresh->servicio->nombre            ?? 'No especificado';
+            $profesional   = $reservaFresh->profesional->nombreNegocio  ?? 'No especificado';
+            $clienteNombre = $reservaFresh->cliente->usuario->nombre    ?? 'Un cliente';
+            $fecha         = substr($reservaFresh->fechaReserva, 0, 10);
+            $hora          = substr($reservaFresh->fechaReserva, 11, 5);
+
+            if ($estadoPago === 'aprobado') {
+                // Notificar cliente
+                $this->notificacionService->notificar(
+                    $reservaFresh->idCliente,
+                    $reservaFresh->cliente->usuario->email,
+                    'Pago confirmado',
+                    "Tu reserva fue confirmada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
+                    'confirmacion',
+                    $reservaFresh->idReserva
+                );
+
+                // Notificar profesional
+                if ($reservaFresh->profesional && $reservaFresh->profesional->usuario) {
+                    $this->notificacionService->notificar(
+                        $reservaFresh->idProfesional,
+                        $reservaFresh->profesional->usuario->email,
+                        'Pago confirmado',
+                        "Se ha confirmado el pago de la reserva.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nFecha: {$fecha}\nHora: {$hora}",
+                        'confirmacion',
+                        $reservaFresh->idReserva
+                    );
+                }
+            } else if ($estadoPago === 'pendiente') {
+                // Notificar cliente
+                $this->notificacionService->notificar(
+                    $reservaFresh->idCliente,
+                    $reservaFresh->cliente->usuario->email,
+                    'Pago pendiente',
+                    "Tu reserva está pendiente de confirmación de pago.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
+                    'confirmacion',
+                    $reservaFresh->idReserva
+                );
+
+                // Notificar profesional
+                if ($reservaFresh->profesional && $reservaFresh->profesional->usuario) {
+                    $this->notificacionService->notificar(
+                        $reservaFresh->idProfesional,
+                        $reservaFresh->profesional->usuario->email,
+                        'Reserva pendiente de pago',
+                        "Se ha registrado una reserva con pago pendiente.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nFecha: {$fecha}\nHora: {$hora}",
+                        'confirmacion',
+                        $reservaFresh->idReserva
+                    );
+                }
+            }
+
+            return $reservaFresh;
         });
     }
 
@@ -263,17 +316,32 @@ class ReservaService
                 $result['paqueteComprado'] = PaqueteComprado::find($reserva->idPaqueteComprado);
             }
 
-            $reservaFresh = $result['reserva'];
-            $servicio     = $reservaFresh->servicio->nombre            ?? 'No especificado';
-            $profesional  = $reservaFresh->profesional->nombreNegocio  ?? 'No especificado';
+            $reservaFresh  = $result['reserva'];
+            $servicio      = $reservaFresh->servicio->nombre            ?? 'No especificado';
+            $profesional   = $reservaFresh->profesional->nombreNegocio  ?? 'No especificado';
+            $clienteNombre = $reservaFresh->cliente->usuario->nombre    ?? 'Un cliente';
 
+            // Notificar cliente
             $this->notificacionService->notificar(
                 $reservaFresh->idCliente,
                 $reservaFresh->cliente->usuario->email,
                 'Reserva reprogramada',
                 "Tu reserva fue reprogramada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nNueva fecha: {$fecha}\nNueva hora: {$horaInicio}",
-                'actualizacion'
+                'actualizacion',
+                $reservaFresh->idReserva
             );
+
+            // Notificar profesional
+            if ($reservaFresh->profesional && $reservaFresh->profesional->usuario) {
+                $this->notificacionService->notificar(
+                    $reservaFresh->idProfesional,
+                    $reservaFresh->profesional->usuario->email,
+                    'Reserva reprogramada',
+                    "Una reserva fue reprogramada por el cliente.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nNueva fecha: {$fecha}\nNueva hora: {$horaInicio}",
+                    'actualizacion',
+                    $reservaFresh->idReserva
+                );
+            }
 
             return $result;
         });
@@ -315,18 +383,33 @@ class ReservaService
                 $reserva->comentarios = 'Cancelada por el usuario';
                 $reserva->save();
 
-                $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
-                $profesional = $reserva->profesional->nombreNegocio  ?? 'No especificado';
-                $fecha       = substr($reserva->fechaReserva, 0, 10);
-                $hora        = substr($reserva->fechaReserva, 11, 5);
+                $servicio      = $reserva->servicio->nombre            ?? 'No especificado';
+                $profesional   = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+                $clienteNombre = $reserva->cliente->usuario->nombre    ?? 'Un cliente';
+                $fecha         = substr($reserva->fechaReserva, 0, 10);
+                $hora          = substr($reserva->fechaReserva, 11, 5);
 
+                // Notificar cliente
                 $this->notificacionService->notificar(
                     $reserva->idCliente,
                     $reserva->cliente->usuario->email,
                     'Reserva cancelada',
                     "Tu reserva fue cancelada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
-                    'cancelacion'
+                    'cancelacion',
+                    $reserva->idReserva
                 );
+
+                // Notificar profesional
+                if ($reserva->profesional && $reserva->profesional->usuario) {
+                    $this->notificacionService->notificar(
+                        $reserva->idProfesional,
+                        $reserva->profesional->usuario->email,
+                        'Reserva cancelada',
+                        "Una reserva fue cancelada.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nFecha: {$fecha}\nHora: {$hora}",
+                        'cancelacion',
+                        $reserva->idReserva
+                    );
+                }
 
                 return [
                     'reserva' => $reserva->fresh(self::WITH_RELATIONS),
@@ -345,18 +428,33 @@ class ReservaService
             $reserva->comentarios = 'Cancelada por el usuario';
             $reserva->save();
 
-            $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
-            $profesional = $reserva->profesional->nombreNegocio  ?? 'No especificado';
-            $fecha       = substr($reserva->fechaReserva, 0, 10);
-            $hora        = substr($reserva->fechaReserva, 11, 5);
+            $servicio      = $reserva->servicio->nombre            ?? 'No especificado';
+            $profesional   = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+            $clienteNombre = $reserva->cliente->usuario->nombre    ?? 'Un cliente';
+            $fecha         = substr($reserva->fechaReserva, 0, 10);
+            $hora          = substr($reserva->fechaReserva, 11, 5);
 
+            // Notificar cliente
             $this->notificacionService->notificar(
                 $reserva->idCliente,
                 $reserva->cliente->usuario->email,
                 'Reserva cancelada',
                 "Tu reserva fue cancelada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
-                'cancelacion'
+                'cancelacion',
+                $reserva->idReserva
             );
+
+            // Notificar profesional
+            if ($reserva->profesional && $reserva->profesional->usuario) {
+                $this->notificacionService->notificar(
+                    $reserva->idProfesional,
+                    $reserva->profesional->usuario->email,
+                    'Reserva cancelada',
+                    "Una reserva fue cancelada.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nFecha: {$fecha}\nHora: {$hora}",
+                    'cancelacion',
+                    $reserva->idReserva
+                );
+            }
 
             $paquete->sesionesUsadas    = max(0, $paquete->sesionesUsadas - 1);
             $paquete->sesionesRestantes = min($paquete->totalSesiones, $paquete->sesionesRestantes + 1);
@@ -468,7 +566,8 @@ class ReservaService
                 $reserva->cliente->usuario->email,
                 'Recordatorio de reserva',
                 'Tu reserva será dentro de 48 horas. Si necesitas cancelarla o reprogramarla, hazlo con anticipación.',
-                'recordatorio'
+                'recordatorio',
+                $reserva->idReserva
             );
 
             $reserva->recordatorio48hEnviado = true;

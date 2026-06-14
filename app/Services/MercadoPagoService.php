@@ -109,12 +109,11 @@ class MercadoPagoService
                 'email' => $reserva->cliente->usuario->email ?? '',
             ],
             'back_urls'          => $backUrls,
-            // 'auto_return'        => 'approved',
             'external_reference' => "reserva_{$idReserva}",
             'notification_url'   => $notificationUrl,
         ];
 
-        if (config('app.env') === 'production') {
+        if (str_starts_with($backUrls['success'], 'https')) {
             $payload['auto_return'] = 'approved';
         }
 
@@ -228,10 +227,13 @@ class MercadoPagoService
                 'email' => $paquete->cliente->usuario->email ?? '',
             ],
             'back_urls'          => $backUrls,
-            'auto_return'        => 'approved',
             'external_reference' => "paquete_{$idPaqueteComprado}",
             'notification_url'   => $notificationUrl,
         ];
+
+        if (str_starts_with($backUrls['success'], 'https')) {
+            $payload['auto_return'] = 'approved';
+        }
 
         Log::info('MercadoPago preference payload paquete', [
             'idPaqueteComprado' => $idPaqueteComprado,
@@ -351,7 +353,7 @@ class MercadoPagoService
 
             $id = (int) str_replace('reserva_', '', $payment->external_reference);
 
-            $reserva = Reserva::findOrFail($id);
+            $reserva = Reserva::with(['cliente.usuario', 'profesional.usuario', 'servicio'])->findOrFail($id);
 
             $estado = match ($payment->status) {
                 'approved' => 'aprobado',
@@ -379,22 +381,64 @@ class MercadoPagoService
 
             $reserva->save();
 
+            $servicio      = $reserva->servicio->nombre            ?? 'No especificado';
+            $profesional   = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+            $clienteNombre = $reserva->cliente->usuario->nombre    ?? 'Un cliente';
+            $fecha         = substr($reserva->fechaReserva, 0, 10);
+            $hora          = substr($reserva->fechaReserva, 11, 5);
+
             if ($estado === 'aprobado') {
-
                 $email = optional($reserva->cliente->usuario)->email;
+                if ($email) {
+                    app(NotificacionService::class)->notificar(
+                        $reserva->idCliente,
+                        $email,
+                        'Pago confirmado',
+                        "Tu reserva fue confirmada.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
+                        'confirmacion',
+                        $reserva->idReserva
+                    );
+                }
 
-                app(NotificacionService::class)->notificar(
-                    $reserva->idCliente,
-                    $email,
-                    'Pago confirmado',
-                    'Tu reserva fue confirmada.',
-                    'confirmacion'
-                );
+                if ($reserva->profesional && $reserva->profesional->usuario) {
+                    app(NotificacionService::class)->notificar(
+                        $reserva->idProfesional,
+                        $reserva->profesional->usuario->email,
+                        'Pago confirmado',
+                        "Se ha confirmado el pago de la reserva.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nFecha: {$fecha}\nHora: {$hora}",
+                        'confirmacion',
+                        $reserva->idReserva
+                    );
+                }
+            } else if ($estado === 'pendiente') {
+                $email = optional($reserva->cliente->usuario)->email;
+                if ($email) {
+                    app(NotificacionService::class)->notificar(
+                        $reserva->idCliente,
+                        $email,
+                        'Pago pendiente',
+                        "Tu reserva está pendiente de confirmación de pago.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
+                        'confirmacion',
+                        $reserva->idReserva
+                    );
+                }
+
+                if ($reserva->profesional && $reserva->profesional->usuario) {
+                    app(NotificacionService::class)->notificar(
+                        $reserva->idProfesional,
+                        $reserva->profesional->usuario->email,
+                        'Reserva pendiente de pago',
+                        "Se ha registrado una reserva con pago pendiente.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nFecha: {$fecha}\nHora: {$hora}",
+                        'confirmacion',
+                        $reserva->idReserva
+                    );
+                }
             }
 
             return ['success' => true];
         });
     }
+
 
     /* =========================================================
      *  PAQUETE WEBHOOK
