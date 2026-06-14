@@ -42,7 +42,7 @@ Route::get('servicios/{id}', [ServicioController::class, 'show']);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
 Route::apiResource('resenas', ResenaController::class);
-Route::apiResource('video-sesiones', VideoSesionController::class);
+Route::apiResource('video-sesiones', VideoSesionController::class)->middleware('auth:sanctum');
 Route::apiResource('horarios', HorarioController::class);
 Route::apiResource('notificaciones', NotificacionController::class);
 Route::apiResource('pagos', PagoController::class);
@@ -69,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me/profesional/excepciones', [ExcepcionDisponibilidadController::class, 'misExcepcionesProfesional']);
     Route::post('/auth/completar-perfil', [AuthController::class, 'completarPerfil']);
     Route::post('reservas/{id}/video-token', [ReservaController::class, 'videoToken']);
+    Route::post('reservas/{id}/livekit/token', [ReservaController::class, 'videoToken']);
     Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
     Route::apiResource('reservas', ReservaController::class);
     Route::post('reservas/cancelar-vencidas', [ReservaController::class, 'cancelarVencidas']);
