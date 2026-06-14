@@ -113,18 +113,7 @@ class ReservaSlotService
                 'estado'        => 'pendiente',
             ]);
 
-            $reserva->load(['servicio', 'cliente.usuario', 'profesional']);
-
-            $servicio    = $reserva->servicio->nombre        ?? 'No especificado';
-            $profesional = $reserva->profesional->nombreNegocio ?? 'No especificado';
-
-            $this->notificacionService->notificar(
-                $idCliente,
-                $reserva->cliente->usuario->email,
-                'Reserva creada correctamente',
-                "Tu reserva fue creada correctamente.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$horaInicio}\nEstado: pendiente",
-                'confirmacion'
-            );
+            $reserva->load(['servicio', 'cliente.usuario', 'profesional.usuario']);
 
             return [
                 'reserva' => $reserva,
@@ -211,18 +200,33 @@ class ReservaSlotService
 
             $paquete->save();
 
-            $reserva->load(['servicio', 'cliente.usuario', 'profesional']);
+            $reserva->load(['servicio', 'cliente.usuario', 'profesional.usuario']);
 
-            $servicio    = $reserva->servicio->nombre            ?? 'No especificado';
-            $profesional = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+            $servicio      = $reserva->servicio->nombre            ?? 'No especificado';
+            $profesional   = $reserva->profesional->nombreNegocio  ?? 'No especificado';
+            $clienteNombre = $reserva->cliente->usuario->nombre ?? 'Un cliente';
 
+            // Notificar cliente
             $this->notificacionService->notificar(
                 $idCliente,
                 $reserva->cliente->usuario->email,
                 'Reserva creada correctamente',
                 "Tu reserva fue creada correctamente.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$horaInicio}\nEstado: confirmada",
-                'confirmacion'
+                'confirmacion',
+                $reserva->idReserva
             );
+
+            // Notificar profesional
+            if ($reserva->profesional && $reserva->profesional->usuario) {
+                $this->notificacionService->notificar(
+                    $idProfesional,
+                    $reserva->profesional->usuario->email,
+                    'Nueva reserva agendada',
+                    "Un cliente ha agendado una reserva contigo.\n\nServicio: {$servicio}\nCliente: {$clienteNombre}\nFecha: {$fecha}\nHora: {$horaInicio}\nEstado: confirmada",
+                    'confirmacion',
+                    $reserva->idReserva
+                );
+            }
 
             return [
                 'reserva'         => $reserva,

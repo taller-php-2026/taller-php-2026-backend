@@ -32,6 +32,12 @@ class AuthController extends Controller
             'roles'          => $usuario->roles,
             'tipoPrincipal'  => $usuario->tipoPrincipal,
             'imagenPerfilUrl' => $usuario->imagenPerfilUrl,
+            'profesional'     => $usuario->profesional ? [
+                'idUsuario'     => $usuario->profesional->idUsuario,
+                'nombreNegocio' => $usuario->profesional->nombreNegocio,
+                'descripcion'   => $usuario->profesional->descripcion,
+                'color'         => $usuario->profesional->color,
+            ] : null,
         ];
     }
 

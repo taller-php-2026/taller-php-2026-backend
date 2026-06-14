@@ -42,6 +42,7 @@ class ServicioService
         $query = Servicio::query()
             ->with(['paqueteServicio', 'ubicacion', 'videoSesion'])
             ->select('servicios.*')
+            ->distinct()
             ->leftJoin('profesionales_servicios', 'servicios.idServicio', '=', 'profesionales_servicios.idServicio')
             ->leftJoin('profesionales', 'profesionales_servicios.idProfesional', '=', 'profesionales.idUsuario');
 

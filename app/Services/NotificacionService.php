@@ -1,7 +1,9 @@
 <?php
+// Servicio de notificaciones.
 
 namespace App\Services;
 
+use App\Events\NotificacionCreada;
 use App\Jobs\EnviarEmailNotificacion;
 use App\Models\Notificacion;
 
@@ -12,7 +14,8 @@ class NotificacionService
         string $email,
         string $titulo,
         string $mensaje,
-        string $tipo
+        string $tipo,
+        ?int $idReserva = null
     ): void {
         $notificacion = Notificacion::create([
             'idUsuario'     => $idUsuario,
@@ -22,6 +25,7 @@ class NotificacionService
             'leida'         => false,
             'enviadaMail'   => false,
             'fechaCreacion' => now(),
+            'idReserva'     => $idReserva,
         ]);
 
         EnviarEmailNotificacion::dispatch(
@@ -30,5 +34,7 @@ class NotificacionService
             $mensaje,
             $notificacion->idNotificacion
         )->afterCommit();
+
+        broadcast(new NotificacionCreada($notificacion));
     }
 }

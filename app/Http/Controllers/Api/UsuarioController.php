@@ -102,14 +102,36 @@ class UsuarioController extends Controller
             'imagenPerfilPublicId' => $resultado['public_id'],
         ]);
 
+        $usuario = $usuario->fresh(['profesional', 'cliente', 'administrador']);
+        $profesional = null;
+        if ($usuario->profesional) {
+            $profesional = [
+                'idUsuario'     => $usuario->profesional->idUsuario,
+                'nombreNegocio' => $usuario->profesional->nombreNegocio,
+                'descripcion'   => $usuario->profesional->descripcion,
+                'color'         => $usuario->profesional->color,
+            ];
+        }
+
         return response()->json([
             'message' => 'Imagen de perfil subida correctamente',
-            'data'    => $usuario,
+            'data'    => [
+                'idUsuario'       => $usuario->idUsuario,
+                'nombre'          => $usuario->nombre,
+                'email'           => $usuario->email,
+                'telefono'        => $usuario->telefono,
+                'activo'          => (bool) $usuario->activo,
+                'roles'           => $usuario->roles,
+                'tipoPrincipal'   => $usuario->tipoPrincipal,
+                'imagenPerfilUrl' => $usuario->imagenPerfilUrl,
+                'profesional'     => $profesional,
+            ],
         ]);
     }
 
     public function actualizarMiPerfil(Request $request)
     {
+        // Actualizar datos de perfil del usuario actual.
         $user = $request->user();
 
         $data = $request->validate([
@@ -119,18 +141,41 @@ class UsuarioController extends Controller
             'telefono'      => 'sometimes|string|max:50',
             'nombreNegocio' => 'sometimes|string|max:255',
             'descripcion'   => 'sometimes|string|max:255',
+            'color'         => 'sometimes|nullable|string|max:7',
         ]);
 
         $usuarioData = array_intersect_key($data, array_flip(['nombre', 'email', 'password', 'telefono']));
         $usuario = $this->usuarioService->update($user, $usuarioData);
 
-        if ($user->profesional && array_intersect_key($data, array_flip(['nombreNegocio', 'descripcion']))) {
-            $user->profesional->update(array_intersect_key($data, array_flip(['nombreNegocio', 'descripcion'])));
+        $profesionalData = array_intersect_key($data, array_flip(['nombreNegocio', 'descripcion', 'color']));
+        if (!empty($profesionalData)) {
+            \App\Models\Profesional::where('idUsuario', $usuario->idUsuario)->update($profesionalData);
+        }
+
+        $usuario = $usuario->fresh(['profesional', 'cliente', 'administrador']);
+        $profesional = null;
+        if ($usuario->profesional) {
+            $profesional = [
+                'idUsuario'     => $usuario->profesional->idUsuario,
+                'nombreNegocio' => $usuario->profesional->nombreNegocio,
+                'descripcion'   => $usuario->profesional->descripcion,
+                'color'         => $usuario->profesional->color,
+            ];
         }
 
         return response()->json([
             'message' => 'Perfil actualizado correctamente',
-            'data'    => $usuario->fresh(['profesional', 'cliente', 'administrador']),
+            'data'    => [
+                'idUsuario'       => $usuario->idUsuario,
+                'nombre'          => $usuario->nombre,
+                'email'           => $usuario->email,
+                'telefono'        => $usuario->telefono,
+                'activo'          => (bool) $usuario->activo,
+                'roles'           => $usuario->roles,
+                'tipoPrincipal'   => $usuario->tipoPrincipal,
+                'imagenPerfilUrl' => $usuario->imagenPerfilUrl,
+                'profesional'     => $profesional,
+            ],
         ]);
     }
 

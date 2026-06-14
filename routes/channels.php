@@ -12,3 +12,7 @@ Broadcast::channel('agenda-profesional.{idProfesional}', function (Usuario $user
     }
     return Administrador::where('idUsuario', $user->idUsuario)->exists();
 });
+
+Broadcast::channel('notificaciones.{idUsuario}', function (Usuario $user, int $idUsuario) {
+    return (int) $user->idUsuario === $idUsuario;
+});

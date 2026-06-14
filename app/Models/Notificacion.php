@@ -18,6 +18,7 @@ class Notificacion extends Model
         'enviadaMail',
         'fechaCreacion',
         'fechaLectura',
+        'idReserva',
     ];
 
     public function usuario()
