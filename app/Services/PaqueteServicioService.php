@@ -8,11 +8,18 @@ use Illuminate\Support\Facades\DB;
 
 class PaqueteServicioService
 {
-    private const WITH_RELATIONS = ['servicio'];
+    private const WITH_RELATIONS = [
+        'servicio.ubicacion',
+        'servicio.profesionales.usuario',
+        'serviciosComunes.servicio',
+    ];
 
     public function getAll(): Collection
     {
-        return PaqueteServicio::with(self::WITH_RELATIONS)->get();
+        return PaqueteServicio::with(self::WITH_RELATIONS)
+            ->where('activo', true)
+            ->whereHas('servicio', fn ($query) => $query->where('activo', true))
+            ->get();
     }
 
     public function getById(int $id): PaqueteServicio

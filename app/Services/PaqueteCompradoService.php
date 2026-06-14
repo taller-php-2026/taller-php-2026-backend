@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Models\PaqueteComprado;
 use App\Models\PaqueteServicio;
 use App\Models\Pago;
+use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -15,25 +15,26 @@ class PaqueteCompradoService
     public function __construct(private NotificacionService $notificacionService) {}
 
     private const WITH_RELATIONS = [
-        'paqueteServicio.servicio',
+        'paqueteServicio.servicio.ubicacion',
+        'paqueteServicio.servicio.profesionales.usuario',
         'pago',
         'cliente.usuario',
     ];
 
-    public function comprar(int $idPaqueteServicio, array $data): PaqueteComprado
+    public function comprar(int $idPaqueteServicio, int $idCliente): PaqueteComprado
     {
-        $paqueteServicio = PaqueteServicio::findOrFail($idPaqueteServicio);
+        $paqueteServicio = PaqueteServicio::with('servicio')->findOrFail($idPaqueteServicio);
 
-        if (!$paqueteServicio->activo) {
+        if (!$paqueteServicio->activo || ! $paqueteServicio->servicio?->activo) {
             throw new HttpException(409, 'El paquete de servicio no está activo.');
         }
 
-        return DB::transaction(function () use ($paqueteServicio, $data) {
+        return DB::transaction(function () use ($paqueteServicio, $idCliente) {
             $totalSesiones = (int) $paqueteServicio->totalSesiones;
 
             $paqueteComprado = PaqueteComprado::create([
                 'idPaqueteServicio' => $paqueteServicio->idPaqueteServicio,
-                'idCliente'         => $data['idCliente'],
+                'idCliente'         => $idCliente,
                 'idPago'            => null,
                 'totalSesiones'     => $totalSesiones,
                 'sesionesUsadas'    => 0,
@@ -45,6 +46,17 @@ class PaqueteCompradoService
 
             return $paqueteComprado->fresh(self::WITH_RELATIONS);
         });
+    }
+
+    public function assertClienteOwner(PaqueteComprado $paqueteComprado, Usuario $usuario): void
+    {
+        $usuario->loadMissing('cliente');
+
+        if ($usuario->cliente && (int) $paqueteComprado->idCliente === (int) $usuario->idUsuario) {
+            return;
+        }
+
+        throw new HttpException(403, 'No tenes permisos para operar este paquete comprado.');
     }
 
     public function pagar(int $idPaqueteComprado, array $data): array

@@ -13,8 +13,6 @@ class StorePaqueteCompradoRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'idCliente' => 'required|integer|exists:clientes,idUsuario',
-        ];
+        return [];
     }
 }

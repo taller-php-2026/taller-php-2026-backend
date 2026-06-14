@@ -40,6 +40,7 @@ Route::get('mercadopago/pago/{paymentId}', [MercadoPagoController::class, 'consu
 Route::get('servicios/buscar', [ServicioController::class, 'buscar']);
 Route::get('servicios/{id}/profesionales', [ServicioController::class, 'profesionales']);
 Route::get('servicios/{id}', [ServicioController::class, 'show']);
+Route::get('paquete-servicios', [PaqueteServicioController::class, 'index']);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
 Route::apiResource('resenas', ResenaController::class);
@@ -47,9 +48,6 @@ Route::apiResource('video-sesiones', VideoSesionController::class)->middleware('
 Route::apiResource('horarios', HorarioController::class);
 Route::apiResource('notificaciones', NotificacionController::class);
 Route::apiResource('pagos', PagoController::class);
-Route::post('paquete-servicios/{id}/comprar', [PaqueteCompradoController::class, 'comprar']);
-Route::post('paquetes-comprados/{id}/pagar', [PaqueteCompradoController::class, 'pagar']);
-Route::get('clientes/{id}/paquetes', [PaqueteCompradoController::class, 'porCliente']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
@@ -63,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/me/perfil', [UsuarioController::class, 'actualizarMiPerfil']);
     Route::post('/me/imagen', [UsuarioController::class, 'subirMiImagen']);
     Route::get('/me/reservas', [ReservaController::class, 'misReservas']);
+    Route::get('/me/paquetes', [PaqueteCompradoController::class, 'misPaquetes']);
     Route::get('/me/profesional/metricas', [ProfesionalMetricasController::class, 'misMetricas']);
     Route::get('/me/profesional/reservas', [ReservaController::class, 'misReservasProfesional']);
     Route::get('/me/profesional/servicios', [ServicioController::class, 'misServiciosProfesional']);
@@ -78,6 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('reservas/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
     Route::post('reservas/{id}/completar', [ReservaController::class, 'completar']);
     Route::post('reservas/{id}/resena', [ReservaController::class, 'resena']);
+    Route::post('paquete-servicios/{id}/comprar', [PaqueteCompradoController::class, 'comprar']);
+    Route::post('paquetes-comprados/{id}/pagar', [PaqueteCompradoController::class, 'pagar']);
+    Route::get('clientes/{id}/paquetes', [PaqueteCompradoController::class, 'porCliente']);
 
     // Mercado Pago — requieren usuario autenticado
     Route::post('reservas/{id}/mercadopago',           [MercadoPagoController::class, 'crearPreferenciaReserva']);
