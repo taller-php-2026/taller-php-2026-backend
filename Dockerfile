@@ -29,6 +29,9 @@ COPY . .
 
 RUN composer dump-autoload --optimize
 
+RUN docker-php-ext-install pcntl
+
 EXPOSE 8080
 
 CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"]
+
