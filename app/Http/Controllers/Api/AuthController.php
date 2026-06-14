@@ -8,6 +8,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\Cliente;
 use App\Models\Profesional;
 use App\Models\Usuario;
+use App\Services\ActivityLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -100,8 +101,26 @@ class AuthController extends Controller
         $usuario = Usuario::where('email', $request->email)->first();
 
         if (! $usuario || ! Hash::check($request->password, $usuario->password)) {
+            app(ActivityLogService::class)->log(
+                'auth',
+                'login_failed',
+                'Intento de login fallido',
+                $request,
+                ['email' => $request->email],
+                401
+            );
+
             return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
+
+        app(ActivityLogService::class)->log(
+            'auth',
+            'login_success',
+            'Usuario inicio sesion correctamente',
+            $request,
+            ['idUsuario' => $usuario->idUsuario],
+            200
+        );
 
         return $this->buildAuthResponse($usuario);
     }
@@ -132,11 +151,29 @@ class AuthController extends Controller
             return $usuario;
         });
 
+        app(ActivityLogService::class)->log(
+            'auth',
+            'register',
+            'Usuario registrado correctamente',
+            $request,
+            ['idUsuario' => $usuario->idUsuario, 'tipo' => $data['tipo']],
+            201
+        );
+
         return $this->buildAuthResponse($usuario);
     }
 
     public function logout(Request $request): JsonResponse
     {
+        app(ActivityLogService::class)->log(
+            'auth',
+            'logout',
+            'Usuario cerro sesion correctamente',
+            $request,
+            ['idUsuario' => $request->user()->idUsuario],
+            200
+        );
+
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout correcto']);

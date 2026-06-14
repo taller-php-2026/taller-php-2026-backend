@@ -13,16 +13,23 @@ RUN apt-get update && apt-get install -y \
         pdo_pgsql \
         zip \
         intl \
-        pcntl
+        pcntl \
+    && pecl install mongodb \
+    && docker-php-ext-enable mongodb \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
+COPY composer.json composer.lock ./
+
+RUN composer install --no-interaction --prefer-dist --no-scripts
+
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist
+RUN composer dump-autoload --optimize
 
 EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"]

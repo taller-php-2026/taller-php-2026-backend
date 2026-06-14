@@ -10,10 +10,14 @@ use App\Models\VideoSesion;
 
 class LiveKitService
 {
-    public function generarToken(string $roomName, string $participantIdentity): string
+    public function generarToken(string $roomName, string $participantIdentity, ?string $participantName = null): string
     {
         $options = (new AccessTokenOptions())
             ->setIdentity($participantIdentity);
+
+        if ($participantName !== null && method_exists($options, 'setName')) {
+            $options->setName($participantName);
+        }
 
         $grant = (new VideoGrant())
             ->setRoomJoin()
@@ -30,21 +34,24 @@ class LiveKitService
 
     public function generarTokenParaReserva(int $idReserva, int $idUsuario): array
     {
-        $reserva = Reserva::with(['servicio', 'videoSesion'])->findOrFail($idReserva);
+        $reserva = Reserva::with(['servicio', 'videoSesion', 'cliente.usuario', 'profesional.usuario'])->findOrFail($idReserva);
 
-        if ($reserva->servicio->modalidad !== 'virtual') {
+        if (! in_array($reserva->servicio->modalidad, ['virtual', 'hibrida'], true)) {
             abort(422, 'La reserva no corresponde a un servicio virtual.');
         }
 
         if ($reserva->estado === 'cancelada') {
-            abort(409, 'No se puede generar videollamada para una reserva cancelada.');
+            abort(422, 'No se puede generar videollamada para una reserva cancelada.');
         }
 
-        if ($reserva->estado === 'completada') {
-            abort(409, 'No se puede generar videollamada para una reserva completada.');
+        if (in_array($reserva->estado, ['pendiente', 'completada', 'finalizada', 'no_asistida'], true)) {
+            abort(422, 'El estado de la reserva no permite generar una videollamada.');
         }
 
-        if ($idUsuario !== (int) $reserva->idCliente && $idUsuario !== (int) $reserva->idProfesional) {
+        $esCliente = $idUsuario === (int) $reserva->idCliente;
+        $esProfesional = $idUsuario === (int) $reserva->idProfesional;
+
+        if (! $esCliente && ! $esProfesional) {
             abort(403, 'El usuario no pertenece a esta reserva.');
         }
 
@@ -64,11 +71,46 @@ class LiveKitService
             $reserva->save();
         }
 
-        $token = $this->generarToken($videoSesion->nombreSala, 'usuario-' . $idUsuario);
+        $rol = $esCliente ? 'cliente' : 'profesional';
+        $identity = $rol . '-' . $idUsuario;
+        $nombre = $esCliente
+            ? ($reserva->cliente?->usuario?->nombre ?? 'Cliente')
+            : ($reserva->profesional?->usuario?->nombre ?? $reserva->profesional?->nombreNegocio ?? 'Profesional');
+
+        $token = $this->generarToken($videoSesion->nombreSala, $identity, $nombre);
 
         return [
-            'roomName'   => $videoSesion->nombreSala,
+            'url'        => config('services.livekit.url'),
             'token'      => $token,
+            'room'       => $videoSesion->nombreSala,
+            'identity'   => $identity,
+            'nombre'     => $nombre,
+            'reserva'    => [
+                'idReserva'   => $reserva->idReserva,
+                'estado'      => $reserva->estado,
+                'fechaReserva' => $reserva->fechaReserva,
+                'servicio'    => [
+                    'nombre'          => $reserva->servicio?->nombre,
+                    'modalidad'       => $reserva->servicio?->modalidad,
+                    'duracionMinutos' => $reserva->servicio?->duracionMinutos,
+                    'imagenUrl'       => $reserva->servicio?->imagenUrl,
+                ],
+                'profesional' => [
+                    'nombreNegocio'   => $reserva->profesional?->nombreNegocio,
+                    'imagenPerfilUrl' => $reserva->profesional?->usuario?->imagenPerfilUrl,
+                    'usuario'       => [
+                        'nombre'          => $reserva->profesional?->usuario?->nombre,
+                        'imagenPerfilUrl' => $reserva->profesional?->usuario?->imagenPerfilUrl,
+                    ],
+                ],
+                'cliente'     => [
+                    'usuario' => [
+                        'nombre'          => $reserva->cliente?->usuario?->nombre,
+                        'imagenPerfilUrl' => $reserva->cliente?->usuario?->imagenPerfilUrl,
+                    ],
+                ],
+            ],
+            'roomName'   => $videoSesion->nombreSala,
             'livekitUrl' => config('services.livekit.url'),
         ];
     }

@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         $usuarioIds = [];
-          foreach ($usuariosData as $u) {
+        foreach ($usuariosData as $u) {
             $id = DB::table('usuarios')->insertGetId(
                 array_merge($u, [
                     'password'      => Hash::make('password123'),
@@ -116,6 +116,8 @@ class DatabaseSeeder extends Seeder
             ['monto' => 950,  'metodoPago' => 'efectivo',     'estado' => 'aprobado', 'fechaPago' => Carbon::now()->subDays(5),  'referenciaExterna' => null],
             ['monto' => 400,  'metodoPago' => 'tarjeta',      'estado' => 'pendiente',  'fechaPago' => null,                       'referenciaExterna' => null],
             ['monto' => 1100, 'metodoPago' => 'transferencia', 'estado' => 'aprobado', 'fechaPago' => Carbon::now()->subDays(2),  'referenciaExterna' => 'REF-005'],
+            ['monto' => 800, 'metodoPago' => 'tarjeta', 'estado' => 'aprobado', 'fechaPago' => Carbon::now(), 'referenciaExterna' => 'REF-006'],
+            ['monto' => 800, 'metodoPago' => 'tarjeta', 'estado' => 'aprobado', 'fechaPago' => Carbon::now(), 'referenciaExterna' => 'REF-007'],
         ];
         foreach ($pagos as $p) {
             DB::table('pagos')->insert(array_merge($p, [
@@ -133,6 +135,8 @@ class DatabaseSeeder extends Seeder
             ['fecha' => Carbon::now()->subDays(5)->toDateString(),  'horaInicio' => '14:00', 'horaFin' => '14:45'],
             ['fecha' => Carbon::now()->addDays(2)->toDateString(),  'horaInicio' => '11:00', 'horaFin' => '11:15'],
             ['fecha' => Carbon::now()->subDays(2)->toDateString(),  'horaInicio' => '15:00', 'horaFin' => '15:50'],
+            ['fecha' => Carbon::now()->toDateString(),              'horaInicio' => '08:00', 'horaFin' => '08:30'], // pasado
+            ['fecha' => Carbon::now()->toDateString(),              'horaInicio' => '17:00', 'horaFin' => '17:30'], // futuro
         ];
         foreach ($horariosData as $h) {
             $horarioIds[] = DB::table('horarios')->insertGetId(
@@ -151,7 +155,10 @@ class DatabaseSeeder extends Seeder
             ['fechaReserva' => Carbon::now()->subDays(5),  'estado' => 'confirmada',  'comentarios' => null,                   'idPago' => 3, 'idProfesional' => $idProf3, 'idCliente' => $idCliente3, 'idServicio' => 3, 'idHorario' => $horarioIds[2]],
             ['fechaReserva' => Carbon::now()->addDays(2),  'estado' => 'pendiente',   'comentarios' => 'Control mensual.',     'idPago' => 4, 'idProfesional' => $idProf1, 'idCliente' => $idCliente2, 'idServicio' => 4, 'idHorario' => $horarioIds[3]],
             ['fechaReserva' => Carbon::now()->subDays(2),  'estado' => 'confirmada',  'comentarios' => 'Terapia online.',      'idPago' => 5, 'idProfesional' => $idProf2, 'idCliente' => $idCliente1, 'idServicio' => 5, 'idHorario' => $horarioIds[4]],
+            ['fechaReserva' => Carbon::now(), 'estado' => 'confirmada', 'comentarios' => 'Hoy pasado.',  'idPago' => 6, 'idProfesional' => $idProf1, 'idCliente' => $idCliente1, 'idServicio' => 1, 'idHorario' => $horarioIds[5]],
+            ['fechaReserva' => Carbon::now(), 'estado' => 'confirmada', 'comentarios' => 'Hoy futuro.',  'idPago' => 7, 'idProfesional' => $idProf1, 'idCliente' => $idCliente1, 'idServicio' => 1, 'idHorario' => $horarioIds[6]],
         ];
+
         foreach ($reservas as $r) {
             DB::table('reservas')->insert(array_merge($r, [
                 'created_at' => now(),
@@ -198,19 +205,19 @@ class DatabaseSeeder extends Seeder
 
         // ─── CICLOS ───────────────────────────────────────────────────────────
         $ciclo1 = DB::table('ciclos')->insertGetId(
-        [
-            'nombre' => 'Semana estándar',
-            'created_at' => now(),
-            'updated_at' => now()
-        ],
+            [
+                'nombre' => 'Semana estándar',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
             'idCiclo'
         );
         $ciclo2 = DB::table('ciclos')->insertGetId(
-        [
-            'nombre' => 'Semana reducida',
-            'created_at' => now(),
-            'updated_at' => now()
-        ],
+            [
+                'nombre' => 'Semana reducida',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
             'idCiclo'
         );
 
@@ -230,27 +237,27 @@ class DatabaseSeeder extends Seeder
 
         // ─── AGENDAS ──────────────────────────────────────────────────────────
         $agenda1 = DB::table('agendas')->insertGetId(
-        [
-            'idCiclo' => $ciclo1,
-            'created_at' => now(),
-            'updated_at' => now()
-        ],
+            [
+                'idCiclo' => $ciclo1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
             'idAgenda'
         );
         $agenda2 = DB::table('agendas')->insertGetId(
-        [
-            'idCiclo' => $ciclo1,
-            'created_at' => now(),
-            'updated_at' => now()
-        ],
+            [
+                'idCiclo' => $ciclo1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
             'idAgenda'
         );
         $agenda3 = DB::table('agendas')->insertGetId(
-        [
-            'idCiclo' => $ciclo2,
-            'created_at' => now(),
-            'updated_at' => now()
-        ],
+            [
+                'idCiclo' => $ciclo2,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
             'idAgenda'
         );
 
@@ -263,6 +270,7 @@ class DatabaseSeeder extends Seeder
             ['idProfesional' => $idProf2, 'idAgenda' => $agenda2, 'dia_semana' => 'Jueves',   'horaInicio' => '10:00', 'horaFin' => '18:00', 'pausaMinutos' => 20, 'bufferMinutos' => 5,  'activa' => 1],
             ['idProfesional' => $idProf3, 'idAgenda' => $agenda3, 'dia_semana' => 'Miércoles', 'horaInicio' => '08:00', 'horaFin' => '14:00', 'pausaMinutos' => 10, 'bufferMinutos' => 0,  'activa' => 1],
             ['idProfesional' => $idProf3, 'idAgenda' => $agenda3, 'dia_semana' => 'Viernes',  'horaInicio' => '08:00', 'horaFin' => '14:00', 'pausaMinutos' => 10, 'bufferMinutos' => 0,  'activa' => 1],
+            ['idProfesional' => $idProf1, 'idAgenda' => $agenda1, 'dia_semana' => 'Sábado', 'horaInicio' => '07:00', 'horaFin' => '20:00', 'pausaMinutos' => 0, 'bufferMinutos' => 0, 'activa' => 1],
         ];
         foreach ($reglas as $r) {
             DB::table('reglas_disponibilidad')->insert(array_merge($r, ['created_at' => now(), 'updated_at' => now()]));

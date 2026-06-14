@@ -42,6 +42,67 @@ class ReservaService
         return Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
     }
 
+    public function authorizeReservaAction(Reserva $reserva, Usuario $usuario, string $action): void
+    {
+        $usuario->loadMissing(['administrador', 'profesional', 'cliente']);
+
+        if ($usuario->administrador) {
+            if ($action === 'mercadopago') {
+                throw new HttpException(403, 'Solo el cliente dueno de la reserva puede iniciar el pago con Mercado Pago.');
+            }
+
+            return;
+        }
+
+        $isClienteOwner = $usuario->cliente && (int) $reserva->idCliente === (int) $usuario->idUsuario;
+        $isProfesionalOwner = $usuario->profesional && (int) $reserva->idProfesional === (int) $usuario->idUsuario;
+
+        $allowed = match ($action) {
+            'view' => $isClienteOwner || $isProfesionalOwner,
+            'pay', 'mercadopago', 'review' => $isClienteOwner,
+            'reprogram', 'complete' => $isProfesionalOwner,
+            'update', 'delete' => false,
+            default => false,
+        };
+
+        if (! $allowed) {
+            throw new HttpException(403, $this->authorizationMessage($action));
+        }
+    }
+
+    public function assertPayable(Reserva $reserva): void
+    {
+        match ($reserva->estado) {
+            'cancelada' => throw new HttpException(422, 'No se puede pagar una reserva cancelada.'),
+            'completada', 'finalizada' => throw new HttpException(422, 'No se puede pagar una reserva finalizada.'),
+            'enCurso' => throw new HttpException(422, 'No se puede pagar una reserva que esta en curso.'),
+            'no_asistida' => throw new HttpException(422, 'No se puede pagar una reserva marcada como no asistida.'),
+            default => null,
+        };
+    }
+
+    public function assertReviewable(Reserva $reserva): void
+    {
+        if (! in_array($reserva->estado, ['completada', 'finalizada'], true)) {
+            throw new HttpException(422, 'Solo se puede resenar una reserva completada o finalizada.');
+        }
+    }
+
+    private function authorizationMessage(string $action): string
+    {
+        return match ($action) {
+            'view' => 'No tenes permisos para consultar esta reserva.',
+            'pay' => 'No tenes permisos para pagar esta reserva.',
+            'mercadopago' => 'No tenes permisos para iniciar el pago de esta reserva.',
+            'review' => 'No tenes permisos para resenar esta reserva.',
+            'reprogram' => 'No tenes permisos para reprogramar esta reserva.',
+            'complete' => 'No tenes permisos para completar esta reserva.',
+            'update' => 'Solo administradores pueden actualizar reservas manualmente.',
+            'delete' => 'Solo administradores pueden eliminar reservas.',
+            default => 'No tenes permisos para operar esta reserva.',
+        };
+    }
+
     public function getReservasByCliente(int $idCliente): Collection
     {
         return Reserva::with([
@@ -90,9 +151,7 @@ class ReservaService
     {
         $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
 
-        if ($reserva->estado === 'cancelada') {
-            throw new HttpException(422, 'No se puede pagar una reserva cancelada.');
-        }
+        $this->assertPayable($reserva);
 
         $pago = $reserva->pago;
 
@@ -199,6 +258,10 @@ class ReservaService
     public function reprogramar(int $id, array $data): array
     {
         $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
+
+        if (in_array($reserva->estado, ['finalizada', 'no_asistida'], true)) {
+            throw new HttpException(409, 'No se puede reprogramar una reserva finalizada o marcada como no asistida.');
+        }
 
         match ($reserva->estado) {
             'cancelada'  => throw new HttpException(409, 'No se puede reprogramar una reserva cancelada.'),
@@ -434,6 +497,10 @@ class ReservaService
     {
         $reserva = Reserva::with(self::WITH_RELATIONS)->findOrFail($id);
 
+        if (! in_array($reserva->estado, ['confirmada', 'enCurso'], true)) {
+            throw new HttpException(422, 'El estado de la reserva no permite completarla.');
+        }
+
         match ($reserva->estado) {
             'pendiente'  => throw new HttpException(409, 'No se puede completar una reserva que está pendiente.'),
             'cancelada'  => throw new HttpException(409, 'No se puede completar una reserva cancelada.'),
@@ -511,8 +578,8 @@ class ReservaService
     {
         $reserva = Reserva::with(['cliente', 'profesional', 'servicio', 'horario'])->findOrFail($id);
 
-        if ($reserva->estado !== 'completada') {
-            throw new HttpException(422, 'Solo se puede reseñar una reserva completada.');
+        if (! in_array($reserva->estado, ['completada', 'finalizada'], true)) {
+            throw new HttpException(422, 'Solo se puede resenar una reserva completada o finalizada.');
         }
 
         if (Resena::where('idReserva', $id)->exists()) {

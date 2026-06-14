@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\PaqueteCompradoController;
 use App\Http\Controllers\Api\CicloController;
 use App\Http\Controllers\Api\RangoHorarioController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\ReservaSlotController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -42,7 +43,7 @@ Route::get('servicios/{id}', [ServicioController::class, 'show']);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
 Route::apiResource('resenas', ResenaController::class);
-Route::apiResource('video-sesiones', VideoSesionController::class);
+Route::apiResource('video-sesiones', VideoSesionController::class)->middleware('auth:sanctum');
 Route::apiResource('horarios', HorarioController::class);
 Route::apiResource('pagos', PagoController::class);
 Route::post('paquete-servicios/{id}/comprar', [PaqueteCompradoController::class, 'comprar']);
@@ -70,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me/profesional/excepciones', [ExcepcionDisponibilidadController::class, 'misExcepcionesProfesional']);
     Route::post('/auth/completar-perfil', [AuthController::class, 'completarPerfil']);
     Route::post('reservas/{id}/video-token', [ReservaController::class, 'videoToken']);
+    Route::post('reservas/{id}/livekit/token', [ReservaController::class, 'videoToken']);
     Route::post('reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
     Route::apiResource('reservas', ReservaController::class);
     Route::post('reservas/cancelar-vencidas', [ReservaController::class, 'cancelarVencidas']);
@@ -118,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('excepciones-disponibilidad', ExcepcionDisponibilidadController::class);
 
     Route::prefix('admin')->group(function () {
+        Route::get('logs', [ActivityLogController::class, 'index']);
         Route::get('metricas',               [AdminController::class, 'metricas']);
         Route::get('reservas/profesionales', [AdminController::class, 'reservasPorProfesional']);
         Route::get('reservas/servicios',     [AdminController::class, 'reservasPorServicio']);
