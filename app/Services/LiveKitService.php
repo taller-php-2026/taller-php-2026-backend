@@ -88,12 +88,16 @@ class LiveKitService
             'reserva'    => [
                 'idReserva'   => $reserva->idReserva,
                 'estado'      => $reserva->estado,
+                'fechaReserva' => $reserva->fechaReserva,
                 'servicio'    => [
-                    'nombre'    => $reserva->servicio?->nombre,
-                    'modalidad' => $reserva->servicio?->modalidad,
+                    'nombre'          => $reserva->servicio?->nombre,
+                    'modalidad'       => $reserva->servicio?->modalidad,
+                    'duracionMinutos' => $reserva->servicio?->duracionMinutos,
+                    'imagenUrl'       => $reserva->servicio?->imagenUrl,
                 ],
                 'profesional' => [
-                    'nombreNegocio' => $reserva->profesional?->nombreNegocio,
+                    'nombreNegocio'   => $reserva->profesional?->nombreNegocio,
+                    'imagenPerfilUrl' => $reserva->profesional?->usuario?->imagenPerfilUrl,
                     'usuario'       => [
                         'nombre'          => $reserva->profesional?->usuario?->nombre,
                         'imagenPerfilUrl' => $reserva->profesional?->usuario?->imagenPerfilUrl,
