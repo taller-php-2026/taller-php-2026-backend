@@ -434,11 +434,11 @@ class MercadoPagoService
                     );
                 }
             }
-            }
 
             return ['success' => true];
         });
     }
+
 
     /* =========================================================
      *  PAQUETE WEBHOOK
