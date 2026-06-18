@@ -17,6 +17,18 @@ class NotificacionService
         string $tipo,
         ?int $idReserva = null
     ): void {
+        if ($idReserva !== null) {
+            $notificacionExistente = Notificacion::where('idUsuario', $idUsuario)
+                ->where('idReserva', $idReserva)
+                ->where('tipo', $tipo)
+                ->where('titulo', $titulo)
+                ->first();
+
+            if ($notificacionExistente) {
+                return;
+            }
+        }
+
         $notificacion = Notificacion::create([
             'idUsuario'     => $idUsuario,
             'titulo'        => $titulo,

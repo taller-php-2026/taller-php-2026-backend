@@ -40,13 +40,14 @@ class ServicioService
     public function buscar(array $filtros): LengthAwarePaginator
     {
         $query = Servicio::query()
-            ->distinct()
             ->with(['paqueteServicio', 'ubicacion', 'videoSesion'])
             ->select('servicios.*')
-            ->distinct()
+            ->selectRaw('MAX(profesionales."ratingPromedio") as rating_orden')
+            ->whereDoesntHave('paqueteServicio')
             ->leftJoin('profesionales_servicios', 'servicios.idServicio', '=', 'profesionales_servicios.idServicio')
             ->leftJoin('profesionales', 'profesionales_servicios.idProfesional', '=', 'profesionales.idUsuario')
-            ->leftJoin('usuarios', 'profesionales.idUsuario', '=', 'usuarios.idUsuario');
+            ->leftJoin('usuarios', 'profesionales.idUsuario', '=', 'usuarios.idUsuario')
+            ->groupBy('servicios.idServicio');
 
         if (!empty($filtros['texto'])) {
             $texto = $filtros['texto'];
@@ -87,7 +88,7 @@ class ServicioService
 
         match ($ordenarPor) {
             'precio'    => $query->orderBy('servicios.precio', $orden),
-            'rating'    => $query->orderBy('profesionales.ratingPromedio', $orden),
+            'rating'    => $query->orderBy('rating_orden', $orden),
             'nombre'    => $query->orderBy('servicios.nombre', $orden),
             default     => $query->orderBy('servicios.created_at', $orden),
         };

@@ -108,7 +108,10 @@ class ServicioController extends Controller
     public function subirImagen(Request $request, $id)
     {
         $request->validate([
-            'imagen' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'imagen' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+        ], [
+            'imagen.uploaded' => 'La imagen no se pudo subir. Verificá que pese menos de 10 MB.',
+            'imagen.max' => 'La imagen debe pesar menos de 10 MB.',
         ]);
 
         $servicio = $this->servicioService->getById((int) $id);

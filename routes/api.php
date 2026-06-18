@@ -41,6 +41,7 @@ Route::get('servicios/buscar', [ServicioController::class, 'buscar']);
 Route::get('servicios/{id}/profesionales', [ServicioController::class, 'profesionales']);
 Route::get('servicios/{id}', [ServicioController::class, 'show']);
 Route::get('paquete-servicios', [PaqueteServicioController::class, 'index']);
+Route::get('paquete-servicios/{id}', [PaqueteServicioController::class, 'show']);
 Route::apiResource('servicio-comun', ServicioComunController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
 Route::apiResource('resenas', ResenaController::class);
@@ -55,6 +56,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('profesionales/{id}/perfil', [ProfesionalController::class, 'updatePerfil']);
 });
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me/notificaciones', [NotificacionController::class, 'misNotificaciones']);
+    Route::patch('/me/notificaciones/{id}/leida', [NotificacionController::class, 'marcarComoLeida']);
+    Route::patch('/me/notificaciones/leidas', [NotificacionController::class, 'marcarTodasComoLeidas']);
     Route::delete('notificaciones', [NotificacionController::class, 'destroyAll']);
     Route::apiResource('notificaciones', NotificacionController::class);
     Route::post('/logout', [AuthController::class, 'logout']);
