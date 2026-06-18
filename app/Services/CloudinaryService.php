@@ -11,7 +11,7 @@ class CloudinaryService
 
     private function getClient(): ?Cloudinary
     {
-        $url = config('services.cloudinary.url', env('CLOUDINARY_URL'));
+        $url = config('services.cloudinary.url');
         if (!$url) {
             return null;
         }
@@ -26,8 +26,13 @@ class CloudinaryService
         // Almacenar imagen.
         $client = $this->getClient();
         if (!$client) {
+            $uploadPath = public_path('uploads');
+            if (! is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
             $nombre = time() . '_' . uniqid() . '.' . $imagen->getClientOriginalExtension();
-            $imagen->move(public_path('uploads'), $nombre);
+            $imagen->move($uploadPath, $nombre);
             $url = asset('uploads/' . $nombre);
 
             return [

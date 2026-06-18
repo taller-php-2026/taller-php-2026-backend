@@ -555,17 +555,21 @@ class ReservaService
             ->where('recordatorio48hEnviado', false)
             ->whereBetween(
                 'fechaReserva',
-                [now()->addHours(47), now()->addHours(48)]
+                [now()->addHours(47), now()->addHours(49)]
             )
             ->get();
 
         foreach ($reservas as $reserva) {
+            $servicio    = $reserva->servicio->nombre           ?? 'No especificado';
+            $profesional = $reserva->profesional->nombreNegocio ?? 'No especificado';
+            $fecha       = substr($reserva->fechaReserva, 0, 10);
+            $hora        = substr($reserva->fechaReserva, 11, 5);
 
             $this->notificacionService->notificar(
                 $reserva->idCliente,
                 $reserva->cliente->usuario->email,
                 'Recordatorio de reserva',
-                'Tu reserva será dentro de 48 horas. Si necesitas cancelarla o reprogramarla, hazlo con anticipación.',
+                "Tu reserva será dentro de 48 horas.\n\nServicio: {$servicio}\nProfesional: {$profesional}\nFecha: {$fecha}\nHora: {$hora}",
                 'recordatorio',
                 $reserva->idReserva
             );

@@ -16,9 +16,14 @@ class PaqueteCompradoService
 
     private const WITH_RELATIONS = [
         'paqueteServicio.servicio.ubicacion',
+        'paqueteServicio.serviciosComunes.servicio',
         'paqueteServicio.servicio.profesionales.usuario',
         'pago',
         'cliente.usuario',
+        'reservas.horario',
+        'reservas.servicio.ubicacion',
+        'reservas.servicio.videoSesion',
+        'reservas.profesional.usuario',
     ];
 
     public function comprar(int $idPaqueteServicio, int $idCliente): PaqueteComprado
@@ -30,6 +35,16 @@ class PaqueteCompradoService
         }
 
         return DB::transaction(function () use ($paqueteServicio, $idCliente) {
+            $pendiente = PaqueteComprado::where('idPaqueteServicio', $paqueteServicio->idPaqueteServicio)
+                ->where('idCliente', $idCliente)
+                ->where('estado', 'pendiente')
+                ->latest('idPaqueteComprado')
+                ->first();
+
+            if ($pendiente) {
+                return $pendiente->fresh(self::WITH_RELATIONS);
+            }
+
             $totalSesiones = (int) $paqueteServicio->totalSesiones;
 
             $paqueteComprado = PaqueteComprado::create([

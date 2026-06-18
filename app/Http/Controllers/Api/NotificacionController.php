@@ -8,9 +8,60 @@ use App\Models\Notificacion;
 
 class NotificacionController extends Controller
 {
+    private function queryDelUsuario(Request $request)
+    {
+        return Notificacion::where('idUsuario', $request->user()->idUsuario);
+    }
+
+    public function misNotificaciones(Request $request)
+    {
+        $query = $this->queryDelUsuario($request);
+
+        return response()->json([
+            'data' => (clone $query)
+                ->orderBy('fechaCreacion', 'desc')
+                ->limit(50)
+                ->get(),
+            'unreadCount' => (clone $query)->where('leida', false)->count(),
+        ]);
+    }
+
+    public function marcarComoLeida(Request $request, int $id)
+    {
+        $notificacion = $this->queryDelUsuario($request)->findOrFail($id);
+
+        $notificacion->update([
+            'leida' => true,
+            'fechaLectura' => $notificacion->fechaLectura ?? now(),
+        ]);
+
+        return response()->json([
+            'data' => $notificacion->fresh(),
+            'unreadCount' => $this->queryDelUsuario($request)->where('leida', false)->count(),
+        ]);
+    }
+
+    public function marcarTodasComoLeidas(Request $request)
+    {
+        $this->queryDelUsuario($request)
+            ->where('leida', false)
+            ->update([
+                'leida' => true,
+                'fechaLectura' => now(),
+            ]);
+
+        return response()->json([
+            'data' => $this->queryDelUsuario($request)
+                ->orderBy('fechaCreacion', 'desc')
+                ->limit(50)
+                ->get(),
+            'unreadCount' => 0,
+        ]);
+    }
+
     public function index(Request $request)
     {
-        return Notificacion::where('idUsuario', $request->user()->idUsuario)
+        return $this->queryDelUsuario($request)
             ->orderBy('fechaCreacion', 'desc')
             ->get();
     }
@@ -26,14 +77,12 @@ class NotificacionController extends Controller
 
     public function show(Request $request, int $id)
     {
-        return Notificacion::where('idUsuario', $request->user()->idUsuario)
-            ->findOrFail($id);
+        return $this->queryDelUsuario($request)->findOrFail($id);
     }
 
     public function update(Request $request, int $id)
     {
-        $notificacion = Notificacion::where('idUsuario', $request->user()->idUsuario)
-            ->findOrFail($id);
+        $notificacion = $this->queryDelUsuario($request)->findOrFail($id);
 
         $notificacion->update($request->all());
 
@@ -42,8 +91,7 @@ class NotificacionController extends Controller
 
     public function destroy(Request $request, int $id)
     {
-        $notificacion = Notificacion::where('idUsuario', $request->user()->idUsuario)
-            ->findOrFail($id);
+        $notificacion = $this->queryDelUsuario($request)->findOrFail($id);
             
         $notificacion->delete();
 
@@ -54,7 +102,7 @@ class NotificacionController extends Controller
 
     public function destroyAll(Request $request)
     {
-        Notificacion::where('idUsuario', $request->user()->idUsuario)->delete();
+        $this->queryDelUsuario($request)->delete();
 
         return response()->json([
             'mensaje' => 'Todas las notificaciones fueron eliminadas correctamente'
