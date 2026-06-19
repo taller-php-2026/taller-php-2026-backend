@@ -27,7 +27,7 @@ class ReservaService
     private const WITH_RELATIONS = [
         'cliente.usuario',
         'profesional.usuario',
-        'servicio',
+        'servicio.ubicacion',
         'pago',
         'horario',
         'paqueteComprado.paqueteServicio.servicio',
@@ -107,7 +107,7 @@ class ReservaService
     public function getReservasByCliente(int $idCliente): Collection
     {
         return Reserva::with([
-            'servicio',
+            'servicio.ubicacion',
             'profesional.usuario',
             'horario',
             'pago',
@@ -582,7 +582,7 @@ class ReservaService
     }
     public function resena(int $id, array $data): array
     {
-        $reserva = Reserva::with(['cliente', 'profesional', 'servicio', 'horario'])->findOrFail($id);
+        $reserva = Reserva::with(['cliente', 'profesional', 'servicio.ubicacion', 'horario'])->findOrFail($id);
 
         if (! in_array($reserva->estado, ['completada', 'finalizada'], true)) {
             throw new HttpException(422, 'Solo se puede resenar una reserva completada o finalizada.');
