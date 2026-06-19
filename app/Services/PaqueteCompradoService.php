@@ -17,6 +17,9 @@ class PaqueteCompradoService
     private const WITH_RELATIONS = [
         'paqueteServicio.servicio.ubicacion',
         'paqueteServicio.servicio.profesionales.usuario',
+        'reservas.horario',
+        'reservas.profesional.usuario',
+        'reservas.servicio',
         'pago',
         'cliente.usuario',
     ];
