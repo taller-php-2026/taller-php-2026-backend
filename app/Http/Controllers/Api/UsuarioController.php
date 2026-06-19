@@ -96,7 +96,7 @@ class UsuarioController extends Controller
 
         $usuario = $this->usuarioService->getById((int) $id);
 
-        $this->cloudinaryService->eliminarImagen($usuario->imagenPerfilPublicId);
+        $imagenAnterior = $usuario->imagenPerfilPublicId;
 
         $resultado = $this->cloudinaryService->subirImagen($request->file('imagen'), 'taller-php/usuarios');
 
@@ -104,6 +104,8 @@ class UsuarioController extends Controller
             'imagenPerfilUrl'      => $resultado['url'],
             'imagenPerfilPublicId' => $resultado['public_id'],
         ]);
+
+        $this->cloudinaryService->eliminarImagen($imagenAnterior);
 
         $usuario = $usuario->fresh(['profesional', 'cliente', 'administrador']);
         $profesional = null;

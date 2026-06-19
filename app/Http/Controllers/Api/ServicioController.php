@@ -117,7 +117,7 @@ class ServicioController extends Controller
         $servicio = $this->servicioService->getById((int) $id);
         $this->ensureOwnsServicio($request, $servicio);
 
-        $this->cloudinaryService->eliminarImagen($servicio->imagenPublicId);
+        $imagenAnterior = $servicio->imagenPublicId;
 
         $resultado = $this->cloudinaryService->subirImagen($request->file('imagen'), 'taller-php/servicios');
 
@@ -125,6 +125,8 @@ class ServicioController extends Controller
             'imagenUrl'      => $resultado['url'],
             'imagenPublicId' => $resultado['public_id'],
         ]);
+
+        $this->cloudinaryService->eliminarImagen($imagenAnterior);
 
         return response()->json([
             'message' => 'Imagen del servicio subida correctamente',

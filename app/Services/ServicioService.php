@@ -88,7 +88,7 @@ class ServicioService
 
         match ($ordenarPor) {
             'precio'    => $query->orderBy('servicios.precio', $orden),
-            'rating'    => $query->orderBy('rating_orden', $orden),
+            'rating'    => $query->orderByRaw('MAX(profesionales."ratingPromedio") ' . $orden),
             'nombre'    => $query->orderBy('servicios.nombre', $orden),
             default     => $query->orderBy('servicios.created_at', $orden),
         };
