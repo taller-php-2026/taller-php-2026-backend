@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Cloudinary\Cloudinary;
 use Illuminate\Http\UploadedFile;
+use Throwable;
 
 class CloudinaryService
 {
@@ -41,15 +42,30 @@ class CloudinaryService
             ];
         }
 
-        $result = $client->uploadApi()->upload($imagen->getRealPath(), [
-            'folder'        => $carpeta,
-            'resource_type' => 'image',
-        ]);
+        try {
+            $result = $client->uploadApi()->upload($imagen->getRealPath(), [
+                'folder'        => $carpeta,
+                'resource_type' => 'image',
+            ]);
 
-        return [
-            'url'       => $result['secure_url'],
-            'public_id' => $result['public_id'],
-        ];
+            return [
+                'url'       => $result['secure_url'],
+                'public_id' => $result['public_id'],
+            ];
+        } catch (Throwable) {
+            $uploadPath = public_path('uploads');
+            if (! is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            $nombre = time() . '_' . uniqid() . '.' . $imagen->getClientOriginalExtension();
+            $imagen->move($uploadPath, $nombre);
+
+            return [
+                'url'       => asset('uploads/' . $nombre),
+                'public_id' => 'local_' . $nombre,
+            ];
+        }
     }
 
     public function eliminarImagen(?string $publicId): void

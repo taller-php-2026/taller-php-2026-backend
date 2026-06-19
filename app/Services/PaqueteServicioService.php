@@ -14,12 +14,28 @@ class PaqueteServicioService
         'serviciosComunes.servicio',
     ];
 
-    public function getAll(): Collection
+    public function getAll(array $filtros = []): Collection
     {
-        return PaqueteServicio::with(self::WITH_RELATIONS)
+        $paquetes = PaqueteServicio::with(self::WITH_RELATIONS)
             ->where('activo', true)
             ->whereHas('servicio', fn ($query) => $query->where('activo', true))
             ->get();
+
+        if (isset($filtros['ratingMin'])) {
+            $paquetes = $paquetes->filter(fn (PaqueteServicio $paquete) => $this->ratingPaquete($paquete) >= (float) $filtros['ratingMin'])->values();
+        }
+
+        $ordenarPor = $filtros['ordenarPor'] ?? 'recientes';
+        $desc = ($filtros['orden'] ?? 'desc') === 'desc';
+
+        $paquetes = match ($ordenarPor) {
+            'precio' => $paquetes->sortBy(fn (PaqueteServicio $paquete) => (float) $paquete->precio, SORT_REGULAR, $desc),
+            'rating' => $paquetes->sortBy(fn (PaqueteServicio $paquete) => $this->ratingPaquete($paquete), SORT_REGULAR, $desc),
+            'nombre' => $paquetes->sortBy(fn (PaqueteServicio $paquete) => strtolower((string) $paquete->servicio?->nombre), SORT_REGULAR, $desc),
+            default => $paquetes->sortBy(fn (PaqueteServicio $paquete) => $paquete->created_at, SORT_REGULAR, $desc),
+        };
+
+        return new Collection($paquetes->values()->all());
     }
 
     public function getById(int $id): PaqueteServicio
@@ -78,5 +94,10 @@ class PaqueteServicioService
         DB::transaction(function () use ($paquete) {
             $paquete->delete();
         });
+    }
+
+    private function ratingPaquete(PaqueteServicio $paquete): float
+    {
+        return (float) ($paquete->servicio?->profesionales->max('ratingPromedio') ?? 0);
     }
 }

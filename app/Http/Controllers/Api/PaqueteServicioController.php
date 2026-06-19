@@ -19,9 +19,9 @@ class PaqueteServicioController extends Controller
         private CloudinaryService $cloudinaryService,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $paquetes = $this->paqueteServicioService->getAll();
+        $paquetes = $this->paqueteServicioService->getAll($request->only(['ratingMin', 'ordenarPor', 'orden']));
 
         return response()->json([
             'data' => $paquetes,
@@ -90,7 +90,7 @@ class PaqueteServicioController extends Controller
         $paquete = $this->paqueteServicioService->getById((int) $id);
         $this->ensureOwnsPaquete($request, $paquete);
 
-        $this->cloudinaryService->eliminarImagen($paquete->imagenPublicId);
+        $imagenAnterior = $paquete->imagenPublicId;
 
         $resultado = $this->cloudinaryService->subirImagen($request->file('imagen'), 'taller-php/paquetes');
 
@@ -98,6 +98,8 @@ class PaqueteServicioController extends Controller
             'imagenUrl'      => $resultado['url'],
             'imagenPublicId' => $resultado['public_id'],
         ]);
+
+        $this->cloudinaryService->eliminarImagen($imagenAnterior);
 
         return response()->json([
             'message' => 'Imagen del paquete subida correctamente',
