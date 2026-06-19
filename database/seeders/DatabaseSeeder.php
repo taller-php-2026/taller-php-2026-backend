@@ -200,7 +200,6 @@ class DatabaseSeeder extends Seeder
             ['idProfesional' => $idProf2, 'idServicio' => 2],
             ['idProfesional' => $idProf2, 'idServicio' => 5],
             ['idProfesional' => $idProf3, 'idServicio' => 3],
-            ['idProfesional' => $idProf2, 'idServicio' => 3],
         ]);
 
         // ─── CICLOS ───────────────────────────────────────────────────────────
