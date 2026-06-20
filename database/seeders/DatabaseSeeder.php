@@ -99,7 +99,7 @@ class DatabaseSeeder extends Seeder
             ['nombre' => 'Sesión de psicología',     'descripcion' => 'Sesión terapéutica individual online.',        'precio' => 1200, 'duracionMinutos' => 60,  'modalidad' => 'virtual',     'idUbicacion' => null],
             ['nombre' => 'Consulta nutricional',     'descripcion' => 'Plan nutricional personalizado presencial.',   'precio' => 950,  'duracionMinutos' => 45,  'modalidad' => 'presencial', 'idUbicacion' => 2],
             ['nombre' => 'Control de seguimiento',   'descripcion' => 'Control post-consulta de 15 minutos.',        'precio' => 400,  'duracionMinutos' => 15,  'modalidad' => 'presencial', 'idUbicacion' => 1],
-            ['nombre' => 'Terapia online',           'descripcion' => 'Sesión de terapia por videollamada.',          'precio' => 1100, 'duracionMinutos' => 50,  'modalidad' => 'virtual',     'idUbicacion' => null],
+            ['nombre' => 'Terapia presencial',       'descripcion' => 'Sesión de terapia presencial.',                'precio' => 1100, 'duracionMinutos' => 50,  'modalidad' => 'presencial', 'idUbicacion' => 1],
         ];
         foreach ($servicios as $s) {
             DB::table('servicios')->insert(array_merge($s, [
@@ -274,5 +274,45 @@ class DatabaseSeeder extends Seeder
         foreach ($reglas as $r) {
             DB::table('reglas_disponibilidad')->insert(array_merge($r, ['created_at' => now(), 'updated_at' => now()]));
         }
+
+        // ─── SERVICIOS COMUNES ───────────────────────────────────────────────
+        $idServicioComun = DB::table('servicios_comunes')->insertGetId([
+            'idServicio' => 5, // Terapia presencial (Sofia Mora)
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], 'idServicioComun');
+
+        // ─── PAQUETES SERVICIOS ──────────────────────────────────────────────
+        $idPaqueteServicio = DB::table('paquetes_servicios')->insertGetId([
+            'idServicio' => 2, // Sesión de psicología (Sofia Mora)
+            'totalSesiones' => 10,
+            'precio' => 10000,
+            'activo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], 'idPaqueteServicio');
+
+        // Asociar el servicio común al paquete
+        DB::table('paquetes_servicios_comunes')->insert([
+            'idPaqueteServicio' => $idPaqueteServicio,
+            'idServicioComun' => $idServicioComun,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // ─── PAQUETES COMPRADOS ──────────────────────────────────────────────
+        DB::table('paquetes_comprados')->insert([
+            'idPaqueteServicio' => $idPaqueteServicio,
+            'idCliente' => $idCliente1, // Ana García
+            'idPago' => null,
+            'totalSesiones' => 10,
+            'sesionesUsadas' => 0,
+            'sesionesRestantes' => 10,
+            'precioCompra' => 10000,
+            'estado' => 'activo',
+            'fechaCompra' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

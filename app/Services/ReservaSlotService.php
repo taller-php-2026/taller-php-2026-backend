@@ -164,9 +164,18 @@ class ReservaSlotService
                 );
             }
 
-            $paquete->load('paqueteServicio');
+            $paquete->load(['paqueteServicio.serviciosComunes']);
 
-            if ((int) $paquete->paqueteServicio->idServicio !== $idServicio) {
+            $allowedServiceIds = [(int) $paquete->paqueteServicio->idServicio];
+            if ($paquete->paqueteServicio->serviciosComunes) {
+                foreach ($paquete->paqueteServicio->serviciosComunes as $sc) {
+                    if ($sc->idServicio) {
+                        $allowedServiceIds[] = (int) $sc->idServicio;
+                    }
+                }
+            }
+
+            if (!in_array($idServicio, $allowedServiceIds, true)) {
                 throw new HttpResponseException(
                     response()->json(
                         ['message' => 'El paquete seleccionado no corresponde al servicio solicitado.'],

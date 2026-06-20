@@ -16,7 +16,7 @@ class PaqueteCompradoService
 
     private const WITH_RELATIONS = [
         'paqueteServicio.servicio.ubicacion',
-        'paqueteServicio.serviciosComunes.servicio',
+        'paqueteServicio.serviciosComunes.servicio.ubicacion',
         'paqueteServicio.servicio.profesionales.usuario',
         'reservas.horario',
         'reservas.profesional.usuario',
@@ -50,6 +50,7 @@ class PaqueteCompradoService
 
             $totalSesiones = (int) $paqueteServicio->totalSesiones;
 
+            // Crear paquete comprado.
             $paqueteComprado = PaqueteComprado::create([
                 'idPaqueteServicio' => $paqueteServicio->idPaqueteServicio,
                 'idCliente'         => $idCliente,
