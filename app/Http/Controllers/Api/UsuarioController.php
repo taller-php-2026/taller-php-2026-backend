@@ -71,9 +71,16 @@ class UsuarioController extends Controller
         ]);
     }
 
+    // Eliminar usuario.
     public function destroy($id)
     {
         $this->adminOnly(request());
+
+        if ((int) $id === (int) request()->user()->idUsuario) {
+            return response()->json([
+                'message' => 'No te podés eliminar a vos mismo.',
+            ], 400);
+        }
 
         $usuario = $this->usuarioService->getById((int) $id);
         $this->usuarioService->delete($usuario);
