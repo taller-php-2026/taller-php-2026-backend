@@ -11,7 +11,7 @@ class PaqueteServicioService
     private const WITH_RELATIONS = [
         'servicio.ubicacion',
         'servicio.profesionales.usuario',
-        'serviciosComunes.servicio',
+        'serviciosComunes.servicio.ubicacion',
     ];
 
     public function getAll(array $filtros = []): Collection
