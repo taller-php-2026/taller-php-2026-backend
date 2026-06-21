@@ -31,6 +31,7 @@ class ReservaService
         'pago',
         'horario',
         'paqueteComprado.paqueteServicio.servicio.ubicacion',
+        'resena',
     ];
 
     public function getAll(): Collection
@@ -112,6 +113,7 @@ class ReservaService
             'horario',
             'pago',
             'paqueteComprado.paqueteServicio.servicio.ubicacion',
+            'resena',
         ])
             ->where('idCliente', $idCliente)
             ->orderBy('fechaReserva', 'desc')
@@ -137,6 +139,20 @@ class ReservaService
     {
         return DB::transaction(function () use ($reserva, $data) {
             $reserva->update($data);
+
+            // Sincronizar fecha y hora en el modelo Horario.
+            if (isset($data['fechaReserva']) && $reserva->horario) {
+                $dateTime = new \DateTime($data['fechaReserva']);
+                $fecha = $dateTime->format('Y-m-d');
+                $horaInicio = $dateTime->format('H:i');
+                $horaFin = $dateTime->modify('+30 minutes')->format('H:i');
+
+                $reserva->horario->update([
+                    'fecha'      => $fecha,
+                    'horaInicio' => $horaInicio,
+                    'horaFin'    => $horaFin,
+                ]);
+            }
 
             return $reserva->fresh(self::WITH_RELATIONS);
         });

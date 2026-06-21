@@ -56,4 +56,11 @@ class Reserva extends Model
     {
         return $this->belongsTo(VideoSesion::class, 'idVideoSesion', 'idVideoSesion');
     }
+
+    // Obtener reseña asociada.
+    public function resena()
+    {
+        return $this->hasOne(Resena::class, 'idReserva', 'idReserva');
+    }
 }
+

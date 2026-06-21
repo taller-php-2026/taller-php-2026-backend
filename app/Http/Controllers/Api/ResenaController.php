@@ -8,8 +8,25 @@ use App\Models\Resena;
 
 class ResenaController extends Controller
 {
-        public function index()
+    // Obtener todas las reseñas filtradas por servicio o profesional.
+    public function index(Request $request)
     {
+        $idServicio = $request->query('idServicio');
+        if ($idServicio) {
+            return Resena::with('cliente.usuario')
+                ->whereHas('reserva', function ($q) use ($idServicio) {
+                    $q->where('idServicio', $idServicio);
+                })
+                ->get();
+        }
+
+        $idProfesional = $request->query('idProfesional');
+        if ($idProfesional) {
+            return Resena::with(['cliente.usuario', 'reserva.servicio'])
+                ->where('idProfesional', $idProfesional)
+                ->get();
+        }
+
         return Resena::all();
     }
 
