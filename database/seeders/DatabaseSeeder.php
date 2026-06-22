@@ -42,11 +42,13 @@ class DatabaseSeeder extends Seeder
         foreach ($usuariosData as $u) {
             $id = DB::table('usuarios')->insertGetId(
                 array_merge($u, [
-                    'password'      => Hash::make('password123'),
-                    'activo'        => 1,
-                    'fechaRegistro' => now(),
-                    'created_at'    => now(),
-                    'updated_at'    => now(),
+                    'password'             => Hash::make('password123'),
+                    'activo'               => 1,
+                    'fechaRegistro'        => now(),
+                    'imagenPerfilUrl'      => null,
+                    'imagenPerfilPublicId' => null,
+                    'created_at'           => now(),
+                    'updated_at'           => now(),
                 ]),
                 'idUsuario'
             );
@@ -103,9 +105,11 @@ class DatabaseSeeder extends Seeder
         ];
         foreach ($servicios as $s) {
             DB::table('servicios')->insert(array_merge($s, [
-                'activo'     => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'activo'         => 1,
+                'imagenUrl'      => null,
+                'imagenPublicId' => null,
+                'created_at'     => now(),
+                'updated_at'     => now(),
             ]));
         }
 
@@ -284,12 +288,14 @@ class DatabaseSeeder extends Seeder
 
         // ─── PAQUETES SERVICIOS ──────────────────────────────────────────────
         $idPaqueteServicio = DB::table('paquetes_servicios')->insertGetId([
-            'idServicio' => 2, // Sesión de psicología (Sofia Mora)
-            'totalSesiones' => 10,
-            'precio' => 10000,
-            'activo' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'idServicio'     => 2, // Sesión de psicología (Sofia Mora)
+            'totalSesiones'  => 10,
+            'precio'         => 10000,
+            'activo'         => true,
+            'imagenUrl'      => null,
+            'imagenPublicId' => null,
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ], 'idPaqueteServicio');
 
         // Asociar el servicio común al paquete

@@ -69,6 +69,10 @@ class PaqueteCompradoService
 
     public function assertClienteOwner(PaqueteComprado $paqueteComprado, Usuario $usuario): void
     {
+        if (\App\Models\Administrador::where('idUsuario', $usuario->idUsuario)->exists()) {
+            return;
+        }
+
         $usuario->loadMissing('cliente');
 
         if ($usuario->cliente && (int) $paqueteComprado->idCliente === (int) $usuario->idUsuario) {
